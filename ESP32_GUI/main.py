@@ -2,9 +2,31 @@ import sys
 import serial
 import threading
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QLabel
-from PyQt5.QtGui import QPixmap, QColor
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject
 from PyQt5.QtWidgets import QProgressBar
+
+
+class SerialReader(QObject):
+    data_received = pyqtSignal(str)
+
+    def __init__(self, port, baudrate):
+        super().__init__()
+        self.serial_port = serial.Serial(port, baudrate, timeout=1)
+        self.running = True
+
+    def read_serial_data(self):
+        while self.running:
+            try:
+                line = self.serial_port.readline().decode('utf-8').strip()
+                if line:
+                    self.data_received.emit(line)
+            except Exception as e:
+                print(f"Error reading serial data: {e}")
+
+    def stop(self):
+        self.running = False
+        self.serial_port.close()
+
 
 class ESP32DataGUI(QMainWindow):
     def __init__(self):
@@ -35,23 +57,19 @@ class ESP32DataGUI(QMainWindow):
         layout.addLayout(gauges_layout)
 
         # Serial communication
-        self.serial_port = serial.Serial('COM5', 115200, timeout=1)
-        self.serial_thread = threading.Thread(target=self.read_serial_data, daemon=True)
+        self.serial_reader = SerialReader('COM5', 115200)
+        self.serial_reader.data_received.connect(self.process_data)
+        self.serial_thread = threading.Thread(target=self.serial_reader.read_serial_data, daemon=True)
         self.serial_thread.start()
-
-        # Update timer
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_gui)
-        self.timer.start(100)  # Update every 100ms
 
     def create_gauge(self, title):
         gauge_widget = QWidget()
         gauge_layout = QVBoxLayout()
         gauge_widget.setLayout(gauge_layout)
 
-        label = QLabel(title)
-        label.setAlignment(Qt.AlignCenter)
-        gauge_layout.addWidget(label)
+        title_label = QLabel(title)
+        title_label.setAlignment(Qt.AlignCenter)
+        gauge_layout.addWidget(title_label)
 
         progress_bar = QProgressBar()
         progress_bar.setRange(0, 100)
@@ -64,45 +82,40 @@ class ESP32DataGUI(QMainWindow):
 
         return gauge_widget
 
-    def read_serial_data(self):
-        while True:
-            try:
-                line = self.serial_port.readline().decode('utf-8').strip()
-                if line:
-                    self.process_data(line)
-            except Exception as e:
-                print(f"Error reading serial data: {e}")
-
     def process_data(self, data):
-        if "Intra presence score:" in data:
-            parts = data.split(',')
-            intra_score = int(parts[0].split(':')[1].strip())
-            inter_score = int(parts[1].split(':')[1].strip())
-            distance = int(parts[2].split(':')[1].strip())
+        try:
+            if "Intra presence score:" in data:
+                parts = data.split(',')
+                intra_score = int(parts[0].split(':')[1].strip())
+                inter_score = int(parts[1].split(':')[1].strip())
+                distance = int(parts[2].split(':')[1].strip())
 
-            self.intra_gauge.findChild(QProgressBar).setValue(min(intra_score // 100, 100))
-            self.intra_gauge.findChild(QLabel, "", Qt.FindChildOption.FindChildrenRecursively).setText(str(intra_score))
+                self.update_gauge(self.intra_gauge, intra_score, 2000)  # Assuming max intra score is 2000
+                self.update_gauge(self.inter_gauge, inter_score, 15000)  # Assuming max inter score is 15000
+                self.update_gauge(self.distance_gauge, distance, 1000)  # Assuming max distance is 1000mm
 
-            self.inter_gauge.findChild(QProgressBar).setValue(min(inter_score // 100, 100))
-            self.inter_gauge.findChild(QLabel, "", Qt.FindChildOption.FindChildrenRecursively).setText(str(inter_score))
+            elif "Motion" in data:
+                self.motion_label.setText("Motion")
+                self.motion_label.setStyleSheet(
+                    "background-color: green; color: white; font-size: 20px; padding: 10px;")
+            elif "No motion" in data:
+                self.motion_label.setText("No Motion")
+                self.motion_label.setStyleSheet("background-color: red; color: white; font-size: 20px; padding: 10px;")
+        except Exception as e:
+            print(f"Error processing data: {e}")
 
-            self.distance_gauge.findChild(QProgressBar).setValue(min(distance // 10, 100))
-            self.distance_gauge.findChild(QLabel, "", Qt.FindChildOption.FindChildrenRecursively).setText(str(distance))
-        elif "Motion" in data:
-            self.motion_label.setText("Motion")
-            self.motion_label.setStyleSheet("background-color: green; color: white; font-size: 20px; padding: 10px;")
-        elif "No motion" in data:
-            self.motion_label.setText("No Motion")
-            self.motion_label.setStyleSheet("background-color: red; color: white; font-size: 20px; padding: 10px;")
+    def update_gauge(self, gauge, value, max_value):
+        progress_bar = gauge.findChild(QProgressBar)
+        value_label = gauge.findChildren(QLabel)[-1]
 
-    def update_gui(self):
-        # This method is called by the timer to update the GUI
-        # We don't need to do anything here as the GUI is updated in process_data
-        pass
+        progress_value = min(int((value / max_value) * 100), 100)
+        progress_bar.setValue(progress_value)
+        value_label.setText(str(value))
 
     def closeEvent(self, event):
-        self.serial_port.close()
+        self.serial_reader.stop()
         super().closeEvent(event)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -321,26 +321,26 @@ static void set_config(acc_detector_presence_config_t *presence_config, presence
 	switch (preset)
 	{
 		case PRESENCE_PRESET_CONFIG_JJH:
-		  acc_detector_presence_config_start_set(presence_config, 0.40f);
+		  acc_detector_presence_config_start_set(presence_config, 0.20f);
       acc_detector_presence_config_end_set(presence_config, 0.60f);
       acc_detector_presence_config_automatic_subsweeps_set(presence_config, true);
       acc_detector_presence_config_signal_quality_set(presence_config, 30.0f);
       acc_detector_presence_config_inter_frame_idle_state_set(presence_config, ACC_CONFIG_IDLE_STATE_DEEP_SLEEP);
       acc_detector_presence_config_sweeps_per_frame_set(presence_config, 16);
-      acc_detector_presence_config_frame_rate_set(presence_config, 1.0f);
+      acc_detector_presence_config_frame_rate_set(presence_config, 10.0f);
       acc_detector_presence_config_frame_rate_app_driven_set(presence_config, false);
       acc_detector_presence_config_reset_filters_on_prepare_set(presence_config, true);
       acc_detector_presence_config_intra_detection_set(presence_config, true);
       acc_detector_presence_config_intra_detection_threshold_set(presence_config, 1.4f);
       acc_detector_presence_config_intra_frame_time_const_set(presence_config, 0.15f);
-      acc_detector_presence_config_intra_output_time_const_set(presence_config, 0.3f);
+      acc_detector_presence_config_intra_output_time_const_set(presence_config, 0.2f);
       acc_detector_presence_config_inter_detection_set(presence_config, true);
       acc_detector_presence_config_inter_detection_threshold_set(presence_config, 2.0f);
       acc_detector_presence_config_inter_frame_deviation_time_const_set(presence_config, 0.5f);
       acc_detector_presence_config_inter_frame_fast_cutoff_set(presence_config, 5.0f);
       acc_detector_presence_config_inter_frame_slow_cutoff_set(presence_config, 0.20f);
-      acc_detector_presence_config_inter_output_time_const_set(presence_config, 2.0f);
-      acc_detector_presence_config_inter_frame_presence_timeout_set(presence_config, 3);
+      acc_detector_presence_config_inter_output_time_const_set(presence_config, 1.0f);
+      acc_detector_presence_config_inter_frame_presence_timeout_set(presence_config, 1);
       acc_detector_presence_config_inter_phase_boost_set(presence_config, false);
 			break;
 
