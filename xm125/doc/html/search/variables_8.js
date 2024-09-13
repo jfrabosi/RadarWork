@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['hamming_5fwindow_3508',['hamming_window',['../structref__app__breathing__handle.html#a528522c221ea729c0c3690eee2b6784b',1,'ref_app_breathing_handle']]],
+  ['hand_5fdetection_5ftimeout_3509',['hand_detection_timeout',['../structhand__motion__detection__config__t.html#a1e9e75aa355e944c2f5fc5824cf1217f',1,'hand_motion_detection_config_t']]],
+  ['hand_5fmotion_5fdetection_5fpresence_5fprocessing_5fconfig_3510',['hand_motion_detection_presence_processing_config',['../structhand__motion__detection__handle.html#a09b8e20151e4632d1c487bfe7d706ee3',1,'hand_motion_detection_handle']]],
+  ['hand_5fmotion_5fdetection_5fpresence_5fprocessor_3511',['hand_motion_detection_presence_processor',['../structhand__motion__detection__handle.html#ac1d8b97dac220f4a241ac307b684dfd5',1,'hand_motion_detection_handle']]],
+  ['hand_5fmotion_5fdetection_5fsensor_5fconfig_3512',['hand_motion_detection_sensor_config',['../structhand__motion__detection__handle.html#a9b13cf5711f7bedc4d95fcf1deea426e',1,'hand_motion_detection_handle']]],
+  ['hand_5fmotion_5fdetection_5ftimeout_5fduration_3513',['hand_motion_detection_timeout_duration',['../structhand__motion__detection__handle.html#a8f35b16736c8d5fa7c9a3a6f37b0f001',1,'hand_motion_detection_handle']]],
+  ['hand_5fmotion_5fdetection_5ftimer_3514',['hand_motion_detection_timer',['../structhand__motion__detection__handle.html#ae9ed692ccc82923e365ee182563c0a54',1,'hand_motion_detection_handle']]],
+  ['handle_3515',['handle',['../structdistance__detector__resources__t.html#a691df7cea51702aada92f1b751fb395a',1,'distance_detector_resources_t::handle()'],['../structpresence__detector__resources__t.html#a1d8838a68bf3c1b077157db505957145',1,'presence_detector_resources_t::handle()'],['../structref__app__breathing__resources__t.html#af8ec240615d237acd1a94b0df053e077',1,'ref_app_breathing_resources_t::handle()']]],
+  ['has_5fdetected_3516',['has_detected',['../structhand__motion__detection__handle.html#aa996a1e2797c9947d998edc5b4538e8f',1,'hand_motion_detection_handle']]],
+  ['has_5finit_3517',['has_init',['../structacc__vibration__app__t.html#a3b27d594f93fba38941cbf763246ecdc',1,'acc_vibration_app_t']]],
+  ['hdma_5fspi1_5frx_3518',['hdma_spi1_rx',['../stm32l4xx__hal__msp_8c.html#ad70fe79aa3139fc9184d8ffb5dfba323',1,'hdma_spi1_rx():&#160;stm32l4xx_hal_msp.c'],['../stm32l4xx__it_8c.html#ad70fe79aa3139fc9184d8ffb5dfba323',1,'hdma_spi1_rx():&#160;stm32l4xx_it.c']]],
+  ['hdma_5fspi1_5ftx_3519',['hdma_spi1_tx',['../stm32l4xx__hal__msp_8c.html#ac8cdcfbb7adfcccc5717da58e1e10ae4',1,'hdma_spi1_tx():&#160;stm32l4xx_hal_msp.c'],['../stm32l4xx__it_8c.html#ac8cdcfbb7adfcccc5717da58e1e10ae4',1,'hdma_spi1_tx():&#160;stm32l4xx_it.c']]],
+  ['hdma_5fusart2_5frx_3520',['hdma_usart2_rx',['../stm32l4xx__hal__msp_8c.html#a784aa25dc7e4580cfbf80658340f482c',1,'hdma_usart2_rx():&#160;stm32l4xx_hal_msp.c'],['../stm32l4xx__it_8c.html#a784aa25dc7e4580cfbf80658340f482c',1,'hdma_usart2_rx():&#160;stm32l4xx_it.c']]],
+  ['hdma_5fusart2_5ftx_3521',['hdma_usart2_tx',['../stm32l4xx__hal__msp_8c.html#a0083b476c2a75ab9fb2ccbed0048857e',1,'hdma_usart2_tx():&#160;stm32l4xx_hal_msp.c'],['../stm32l4xx__it_8c.html#a0083b476c2a75ab9fb2ccbed0048857e',1,'hdma_usart2_tx():&#160;stm32l4xx_it.c']]],
+  ['hi2c2_3522',['hi2c2',['../stm32l4xx__it_8c.html#ac379bcc152d860f08b1279fd3e232295',1,'stm32l4xx_it.c']]],
+  ['high_5fspeed_5fmode_3523',['high_speed_mode',['../structacc__processing__metadata__t.html#ab54e0dc44618f31b6c7be2c77d830744',1,'acc_processing_metadata_t']]],
+  ['highest_5fbreathing_5frate_3524',['highest_breathing_rate',['../structref__app__breathing__config__t.html#ad56e007d467b7ede4750174cc10e6c01',1,'ref_app_breathing_config_t']]],
+  ['highest_5ffreq_3525',['highest_freq',['../structref__app__breathing__handle.html#a5913db29e74a6916ebd780be84519deb',1,'ref_app_breathing_handle']]],
+  ['hrtc_3526',['hrtc',['../stm32l4xx__it_8c.html#aa0c7fca836406ade332e1e3f1039d8ab',1,'stm32l4xx_it.c']]],
+  ['huart2_3527',['huart2',['../stm32l4xx__it_8c.html#aa9479c261d65eecedd3d9582f7f0f89c',1,'stm32l4xx_it.c']]],
+  ['hwaas_3528',['hwaas',['../structhand__motion__detection__algo__config__t.html#a2bf65999ba3c8175b2c63f8d6837e381',1,'hand_motion_detection_algo_config_t::hwaas()'],['../structref__app__parking__car__config__t.html#a05864734c735dd53604fbf8cf6482df0',1,'ref_app_parking_car_config_t::hwaas()'],['../structref__app__parking__obstruction__config__t.html#a6c443ba1b8851ebb9f899163226e7339',1,'ref_app_parking_obstruction_config_t::hwaas()']]]
+];

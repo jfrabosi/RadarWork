@@ -1,0 +1,23 @@
+var searchData=
+[
+  ['a121_5fspi_5fhandle_3379',['A121_SPI_HANDLE',['../i2c__application__system__stm32_8c.html#a8e9238aad0afb911cce56f1b4cfbd3e0',1,'A121_SPI_HANDLE():&#160;i2c_application_system_stm32.c'],['../acc__hal__integration__stm32cube__xm_8c.html#a8e9238aad0afb911cce56f1b4cfbd3e0',1,'A121_SPI_HANDLE():&#160;acc_hal_integration_stm32cube_xm.c'],['../acc__integration__stm32_8c.html#a8e9238aad0afb911cce56f1b4cfbd3e0',1,'A121_SPI_HANDLE():&#160;acc_integration_stm32.c']]],
+  ['a_5fangle_3380',['a_angle',['../structref__app__breathing__handle.html#a625ac7fef03f45e638c4c9e66acd27fe',1,'ref_app_breathing_handle']]],
+  ['a_5fstatic_3381',['a_static',['../structref__app__breathing__handle.html#a8e0ee37f66630781b73aacf09bf7235f',1,'ref_app_breathing_handle']]],
+  ['address_3382',['address',['../structacc__reg__protocol__t.html#a7ff81e542b2fa4542fe1b53d6f4946cf',1,'acc_reg_protocol_t']]],
+  ['afr_3383',['AFR',['../structgpio__config__t.html#a4eb8d85b4095514d39ed80a104f56292',1,'gpio_config_t']]],
+  ['algo_5fconfig_3384',['algo_config',['../structhand__motion__detection__config__t.html#a367aff4f37ebae5028bbacfe26fa55b9',1,'hand_motion_detection_config_t']]],
+  ['algo_5fresult_3385',['algo_result',['../structhand__motion__detection__result__t.html#a41ef2cadd2743656e78902e841b60057',1,'hand_motion_detection_result_t']]],
+  ['algo_5fresult_5favailable_3386',['algo_result_available',['../structhand__motion__detection__result__t.html#a003eaae98895d6e372f3ef88719738b7',1,'hand_motion_detection_result_t']]],
+  ['ampl_5fmean_3387',['ampl_mean',['../structacc__touchless__button__handle__t.html#a431a132f2875651101043f0f480b757f',1,'acc_touchless_button_handle_t']]],
+  ['ampl_5fstd_3388',['ampl_std',['../structacc__touchless__button__handle__t.html#a9bb62d5d77345174741dc94b1172055e',1,'acc_touchless_button_handle_t']]],
+  ['amplitude_5fthreshold_3389',['amplitude_threshold',['../structref__app__parking__car__config__t.html#a2e01b40bf0eed9c69ec3bca9d8d58dd5',1,'ref_app_parking_car_config_t::amplitude_threshold()'],['../structacc__vibration__config__t.html#a044632a8fa05df22c1dfff7b41c0906e',1,'acc_vibration_config_t::amplitude_threshold()']]],
+  ['angle_3390',['angle',['../structref__app__breathing__handle.html#adf3b7527ae1f207fc204083e56766c8e',1,'ref_app_breathing_handle']]],
+  ['angle_5fbuffer_3391',['angle_buffer',['../structref__app__breathing__handle.html#a0e0e006d0f3ccdaeadcd9dab89acde53',1,'ref_app_breathing_handle']]],
+  ['app_5fconfig_3392',['app_config',['../structapp__context__t.html#a6ee5f90a5f937a87190458749e64fa65',1,'app_context_t::app_config()'],['../structapp__context__t.html#ae208277c2ae935eee81644bec65c779e',1,'app_context_t::app_config()']]],
+  ['app_5fmode_3393',['app_mode',['../structhand__motion__detection__result__t.html#a8d9003eaf0efe96d6110215978f8fa64',1,'hand_motion_detection_result_t::app_mode()'],['../structhand__motion__detection__handle.html#a44e5f7598327e8f9ec5acda18485d576',1,'hand_motion_detection_handle::app_mode()']]],
+  ['app_5fresources_3394',['app_resources',['../i2c__ref__app__breathing_8c.html#a7847e284c4bdb78619986901671adcf5',1,'i2c_ref_app_breathing.c']]],
+  ['app_5fstate_3395',['app_state',['../structref__app__breathing__result__t.html#a073e6918fa75215ca6d46f25abeb882d',1,'ref_app_breathing_result_t::app_state()'],['../structref__app__breathing__handle.html#abb8f12033d78c84952b0448b2f7362ba',1,'ref_app_breathing_handle::app_state()'],['../i2c__ref__app__breathing_8c.html#aa5bfb0206194ec5357ecc8096d212bab',1,'app_state():&#160;i2c_ref_app_breathing.c']]],
+  ['arg_3396',['arg',['../structout__fct__wrap__type.html#ad099c5ee9191dcfb95a86451ced50382',1,'out_fct_wrap_type']]],
+  ['arg_5fnorm_3397',['arg_norm',['../structacc__touchless__button__handle__t.html#a4a4a14b9de637224915bb703bb0c2102',1,'acc_touchless_button_handle_t']]],
+  ['ascr_3398',['ASCR',['../structgpio__config__t.html#a0edaa3d164b0f8330d00444a761a1b94',1,'gpio_config_t']]]
+];

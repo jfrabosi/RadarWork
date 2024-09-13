@@ -1,0 +1,5 @@
+../Src/examples/getting_started/example_detector_presence.c:73:5:acconeer_main	18
+../Src/examples/getting_started/example_detector_presence.c:235:13:cleanup	5
+../Src/examples/getting_started/example_detector_presence.c:265:13:do_sensor_calibration	8
+../Src/examples/getting_started/example_detector_presence.c:300:13:print_result	2
+../Src/examples/getting_started/example_detector_presence.c:319:13:set_config	6
