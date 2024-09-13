@@ -322,7 +322,7 @@ static void set_config(acc_detector_presence_config_t *presence_config, presence
 	{
 		case PRESENCE_PRESET_CONFIG_JJH:
 		  acc_detector_presence_config_start_set(presence_config, 0.20f);
-      acc_detector_presence_config_end_set(presence_config, 0.60f);
+      acc_detector_presence_config_end_set(presence_config, 1.00f);
       acc_detector_presence_config_automatic_subsweeps_set(presence_config, true);
       acc_detector_presence_config_signal_quality_set(presence_config, 30.0f);
       acc_detector_presence_config_inter_frame_idle_state_set(presence_config, ACC_CONFIG_IDLE_STATE_DEEP_SLEEP);
