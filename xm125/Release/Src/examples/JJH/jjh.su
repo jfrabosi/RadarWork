@@ -1,0 +1,10 @@
+../Src/examples/JJH/jjh.c:811:13:set_custom_config	16	static
+../Src/examples/JJH/jjh.c:342:13:get_esp32_serial	72	static
+../Src/examples/JJH/jjh.c:791:14:parse_float	16	static
+../Src/examples/JJH/jjh.c:751:12:Hprintf	16	static
+../Src/examples/JJH/jjh.c:763:13:print_config_menu	16	static
+../Src/examples/JJH/jjh.c:424:13:config_menu	88	static
+../Src/examples/JJH/jjh.c:913:13:do_sensor_calibration	48	static
+../Src/examples/JJH/jjh.c:828:13:cleanup	8	static
+../Src/examples/JJH/jjh.c:1051:13:print_distance_result	24	static
+../Src/examples/JJH/jjh.c:158:5:acconeer_main_JJH	448	static

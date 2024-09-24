@@ -1,1 +1,25 @@
-s
+9-12-24 ----------------------------------------------------------------------------------------------------------------
+
+First day of work. Got the XM125 set up using STM32CubeIDE. Followed the Software User Guide on their documents page 
+(https://developer.acconeer.com/home/a121-docs-software/xm125-xe125/). Set up one of the basic examples, the "presence
+detection" example. Tuned the example for my particular environment (testing 0.2m-0.6m away, tuned for a faster 
+detection dropoff time).
+
+Also, set up the ESP32 with a PlatformIO project. It's basically acting like a repeater, reading the messages from the
+STM32 UART and printing them to the USB COM port.
+
+Wrote (with the help of Claude AI) a GUI for visualizing the results from the example. Works pretty well!
+
+Also: did prep work (reviewing documents, datasheets, etc.) yesterday.
+
+
+9-17-24 ----------------------------------------------------------------------------------------------------------------
+
+Looked through some more documentation (mainly the handbook and the presence / distance example documents), and got the
+distance example running. It can see through objects!
+
+Going to try and set it up with the Fo-SHIP so that I can automate testing (and actually verify the measurements to 
+ground-truth).
+
+
+9-18-24 ----------------------------------------------------------------------------------------------------------------

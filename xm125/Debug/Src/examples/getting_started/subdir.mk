@@ -5,13 +5,13 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Src/examples/getting_started/example_detector_presence.c 
+../Src/examples/getting_started/example_detector_distance.c 
 
 OBJS += \
-./Src/examples/getting_started/example_detector_presence.o 
+./Src/examples/getting_started/example_detector_distance.o 
 
 C_DEPS += \
-./Src/examples/getting_started/example_detector_presence.d 
+./Src/examples/getting_started/example_detector_distance.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,7 +21,7 @@ Src/examples/getting_started/%.o Src/examples/getting_started/%.su Src/examples/
 clean: clean-Src-2f-examples-2f-getting_started
 
 clean-Src-2f-examples-2f-getting_started:
-	-$(RM) ./Src/examples/getting_started/example_detector_presence.cyclo ./Src/examples/getting_started/example_detector_presence.d ./Src/examples/getting_started/example_detector_presence.o ./Src/examples/getting_started/example_detector_presence.su
+	-$(RM) ./Src/examples/getting_started/example_detector_distance.cyclo ./Src/examples/getting_started/example_detector_distance.d ./Src/examples/getting_started/example_detector_distance.o ./Src/examples/getting_started/example_detector_distance.su
 
 .PHONY: clean-Src-2f-examples-2f-getting_started
 

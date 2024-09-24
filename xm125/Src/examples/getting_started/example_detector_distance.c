@@ -48,7 +48,7 @@
 
 typedef enum
 {
-	DISTANCE_PRESET_CONFIG_NONE = 0,
+  DISTANCE_PRESET_CONFIG_JJH,
 	DISTANCE_PRESET_CONFIG_BALANCED,
 	DISTANCE_PRESET_CONFIG_HIGH_ACCURACY,
 } distance_preset_config_t;
@@ -129,7 +129,7 @@ int acconeer_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	set_config(resources.config, DISTANCE_PRESET_CONFIG_BALANCED);
+	set_config(resources.config, DISTANCE_PRESET_CONFIG_JJH);
 
 	if (!initialize_detector_resources(&resources))
 	{
@@ -239,8 +239,17 @@ static void set_config(acc_detector_distance_config_t *detector_config, distance
 	// Add configuration of the detector here
 	switch (preset)
 	{
-		case DISTANCE_PRESET_CONFIG_NONE:
-			// Add configuration of the detector here
+		case DISTANCE_PRESET_CONFIG_JJH:
+      acc_detector_distance_config_start_set(detector_config, 0.4f);
+      acc_detector_distance_config_end_set(detector_config, 0.80f);
+      acc_detector_distance_config_max_step_length_set(detector_config, 0U);
+      acc_detector_distance_config_max_profile_set(detector_config, ACC_CONFIG_PROFILE_5);
+      acc_detector_distance_config_reflector_shape_set(detector_config, ACC_DETECTOR_DISTANCE_REFLECTOR_SHAPE_PLANAR);
+      acc_detector_distance_config_peak_sorting_set(detector_config, ACC_DETECTOR_DISTANCE_PEAK_SORTING_STRONGEST);
+      acc_detector_distance_config_threshold_method_set(detector_config, ACC_DETECTOR_DISTANCE_THRESHOLD_METHOD_CFAR);
+      acc_detector_distance_config_threshold_sensitivity_set(detector_config, 0.5f);
+      acc_detector_distance_config_signal_quality_set(detector_config, 35.0f);
+      acc_detector_distance_config_close_range_leakage_cancellation_set(detector_config, false);
 			break;
 
 		case DISTANCE_PRESET_CONFIG_BALANCED:

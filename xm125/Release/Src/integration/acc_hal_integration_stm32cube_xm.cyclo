@@ -1,0 +1,8 @@
+../Src/integration/acc_hal_integration_stm32cube_xm.c:68:13:acc_hal_integration_sensor_transfer16	1
+../Src/integration/acc_hal_integration_stm32cube_xm.c:107:6:acc_hal_integration_sensor_supply_on	1
+../Src/integration/acc_hal_integration_stm32cube_xm.c:113:6:acc_hal_integration_sensor_supply_off	1
+../Src/integration/acc_hal_integration_stm32cube_xm.c:119:6:acc_hal_integration_sensor_enable	1
+../Src/integration/acc_hal_integration_stm32cube_xm.c:130:6:acc_hal_integration_sensor_disable	1
+../Src/integration/acc_hal_integration_stm32cube_xm.c:142:6:acc_hal_integration_wait_for_sensor_interrupt	4
+../Src/integration/acc_hal_integration_stm32cube_xm.c:166:23:acc_hal_rss_integration_get_implementation	1
+../Src/integration/acc_hal_integration_stm32cube_xm.c:185:10:acc_hal_integration_sensor_count	1

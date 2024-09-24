@@ -1,0 +1,17 @@
+../Src/examples/JJH/jjh.c:157:5:acconeer_main_JJH	456	static
+../Src/examples/JJH/jjh.c:327:13:get_esp32_serial	64	static
+../Src/examples/JJH/jjh.c:371:13:load_config	64	static
+../Src/examples/JJH/jjh.c:412:13:config_menu	80	static
+../Src/examples/JJH/jjh.c:652:12:Hprintf	16	static
+../Src/examples/JJH/jjh.c:664:13:print_config_menu	16	static
+../Src/examples/JJH/jjh.c:690:14:parse_float	24	static
+../Src/examples/JJH/jjh.c:700:12:parse_int	24	static
+../Src/examples/JJH/jjh.c:710:13:set_config_custom	16	static
+../Src/examples/JJH/jjh.c:724:13:cleanup	16	static
+../Src/examples/JJH/jjh.c:742:13:set_config	16	static
+../Src/examples/JJH/jjh.c:776:13:initialize_detector_resources	16	static
+../Src/examples/JJH/jjh.c:809:13:do_sensor_calibration	40	static
+../Src/examples/JJH/jjh.c:847:13:do_full_detector_calibration	72	static
+../Src/examples/JJH/jjh.c:875:13:do_detector_calibration_update	48	static
+../Src/examples/JJH/jjh.c:901:13:do_detector_get_next	48	static
+../Src/examples/JJH/jjh.c:947:13:print_distance_result	24	static

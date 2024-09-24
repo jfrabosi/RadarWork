@@ -10,6 +10,9 @@
 #include <stdlib.h>
 
 
+
+
+
 #include "acc_definitions_a121.h"
 #include "acc_definitions_common.h"
 #include "acc_detector_distance.h"
@@ -19,8 +22,11 @@
 #include "acc_integration_log.h"
 #include "acc_rss_a121.h"
 #include "acc_sensor.h"
-
 #include "acc_version.h"
+
+
+
+
 
 
 /** \example example_detector_distance_low_power_off.c
@@ -56,7 +62,7 @@ typedef enum
 
 #define SENSOR_ID           (1U)
 #define SENSOR_TIMEOUT_MS   (1000U)
-#define DEFAULT_UPDATE_RATE (1.0f)
+#define DEFAULT_UPDATE_RATE (3.0f)
 
 
 static void print_result(acc_detector_distance_result_t *result);

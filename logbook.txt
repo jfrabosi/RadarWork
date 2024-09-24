@@ -10,4 +10,67 @@ STM32 UART and printing them to the USB COM port.
 
 Wrote (with the help of Claude AI) a GUI for visualizing the results from the example. Works pretty well!
 
+Also: did prep work (reviewing documents, datasheets, etc.) yesterday.
 
+
+9-17-24 ----------------------------------------------------------------------------------------------------------------
+
+Looked through some more documentation (mainly the handbook and the presence / distance example documents), and got the
+distance example running. It can see through objects!
+
+Going to try and set it up with the Fo-SHIP so that I can automate testing (and actually verify the measurements to 
+ground-truth).
+
+
+9-18-24 ----------------------------------------------------------------------------------------------------------------
+
+Set up the Fo-SHIP to move in the Z-axis only, and cleaned up the wiring harness (no more IMUs). Calibrated and verified
+the Z-axis movement - it's accurate to within 1.34mm of its setpoint. Also, it can follow a set waveform (sum of sines)
+to mimic the motion of waves.
+
+I have a thick textbook (DSP book, actually) that is attached to the end effector. I can attach other objects (aluminum
+foil, water containers, etc.) to change the end effector material.
+
+
+9-19-24 ----------------------------------------------------------------------------------------------------------------
+
+Thought I burned the radar board, but it was just a power supply issue. All is good! The STM32 won't run unless the 
+debugger (ST-LINK) is powered and attached, though - need to fix this later.
+
+Tuned the distance example a bit more, and ran some automated tests. The radar is pretty accurate with the book alone!
+Also, modified the Fo-SHIP motion so that the top end effector sets its roll angle according to the derivative of the
+Z-axis function - this makes it look like it's rolling with the waves!
+
+
+9-22-24 ----------------------------------------------------------------------------------------------------------------
+
+Read through the distance detector documentation, as well as various other XM125 docs. I have a good feel for how the
+system works now, and what I need to change based on the final use case. Also sent JRR an email to clarify that final
+use case a bit more.
+
+
+9-23-24 ----------------------------------------------------------------------------------------------------------------
+
+Got the Bluetooth module on the ESP32 working - I can now communicate with the STM32 through the ESP32's BT serial
+(requires a laptop with a PuTTY terminal open for the BT COM port). 
+
+Started to modify the STM32 code so that I can change the configuration of the radar through the BT serial connection. 
+This means I can tweak the settings without needing to flash new code to the STM32, and for the final use case, the user
+can modify the configuration without needing STM32CubeIDE. Working on a menu dialog to facilitate changing the configs.
+
+Currently, the general menu is made, along with functions to change the start and end distance of the measurement range,
+the update rate, and to toggle low power mode (powers off between measurements). I also added a function to test the
+actual update rate (may be slightly different than set rate).
+
+Next steps: 
+- Finish the switch(case) functions for the other settings, make sure they all work reliably.
+- Send the saved configuration back to the ESP32
+- Set up the Adalogger to save the configuration and the measured data, and to read the saved configuration on startup
+- Find a way to turn on/off the Bluetooth (maybe turn on automatically, turn off if the STM enters low power mode?)
+- (future problem) Make sure that the STM32 can start logging data without needing the BT connection first? (like if it
+  loses power from solar, then turns on a few minutes later)
+
+Also, started to look at the Adalogger Feather. It seems to use I2C with the ESP32. I'd like to store the configuration
+settings for the STM32 on the Adalogger SD card, so that it persists when the system powers down.
+
+9-XX-24 ----------------------------------------------------------------------------------------------------------------

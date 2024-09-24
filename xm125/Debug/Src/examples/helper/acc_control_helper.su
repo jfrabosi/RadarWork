@@ -1,5 +1,0 @@
-../Src/examples/helper/acc_control_helper.c:22:13:acc_control_helper_calibrate	40	static
-../Src/examples/helper/acc_control_helper.c:41:6:acc_control_helper_create	16	static
-../Src/examples/helper/acc_control_helper.c:50:6:acc_control_helper_destroy	16	static
-../Src/examples/helper/acc_control_helper.c:81:6:acc_control_helper_activate	32	static
-../Src/examples/helper/acc_control_helper.c:157:6:acc_control_helper_get_next	16	static
