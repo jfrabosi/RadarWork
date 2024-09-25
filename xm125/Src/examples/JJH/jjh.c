@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <math.h>
-#include <stdarg.h>
+//#include <ctype.h>
+//#include <math.h>
+//#include <stdarg.h>
 
 #include "acc_definitions_a121.h"
 #include "acc_definitions_common.h"
@@ -77,8 +77,7 @@ typedef enum
 #define SENSOR_ID (1U)
 #define SENSOR_TIMEOUT_MS (2000U)
 #define DEFAULT_UPDATE_RATE (15.0f)
-
-#define MAX_BUFFER_SIZE 35
+#define MAX_BUFFER_SIZE 64
 
 typedef struct
 {
@@ -107,6 +106,8 @@ typedef struct
   int low_power_mode;
 } config_settings_t;
 
+static bool change_config = false;
+
 static void cleanup(distance_detector_resources_t *resources);
 
 
@@ -125,35 +126,42 @@ static bool do_sensor_calibration(acc_sensor_t     *sensor,
 static bool do_full_detector_calibration(distance_detector_resources_t *resources,
                                          const acc_cal_result_t        *sensor_cal_result);
 
-
 static bool do_detector_calibration_update(distance_detector_resources_t *resources,
                                            const acc_cal_result_t        *sensor_cal_result);
-
 
 static bool do_detector_get_next(distance_detector_resources_t  *resources,
                                  const acc_cal_result_t         *sensor_cal_result,
                                  acc_detector_distance_result_t *result);
 
-
 static void print_distance_result(const acc_detector_distance_result_t *result);
+
 
 static bool get_esp32_serial(char *result, uint16_t buf_size, bool wait_for_enter_key);
 
+
 static bool load_config(config_settings_t *config);
 
-static void config_menu(config_settings_t *config, acc_detector_distance_config_t *detector_config);
 
-static void print_config_menu(config_settings_t *config);
+static bool wait_for_m_code(const char* send, const char* receive, int timeout_s);
 
-static float parse_float(const char *string);
 
-static int parse_int(const char *string);
+//static float parse_float(const char *string);
+//
+//
+//static int parse_int(const char *string);
+
 
 static void set_custom_config(config_settings_t *config, acc_detector_distance_config_t *detector_config);
 
-static int Hprintf(const char *format, ...);
+
+static bool disable_uart_debug(void);
+
+
+static bool enable_uart_debug(void);
+
 
 int acconeer_main_JJH(int argc, char *argv[]);
+
 
 int acconeer_main_JJH(int argc, char *argv[])
 {
@@ -161,13 +169,13 @@ int acconeer_main_JJH(int argc, char *argv[])
   (void)argv;
   distance_detector_resources_t resources = { 0 };
 
-  char received_uart_data[MAX_BUFFER_SIZE];
-  bool change_config = false;
   config_settings_t current_config;
   uint32_t startTime = HAL_GetTick();
   int16_t update_counter = 0;
   uint32_t testTime = 1000;
-  uint8_t debug_buf = 0;
+  uint8_t _received_uart_data[MAX_BUFFER_SIZE];
+
+  wait_for_m_code("M001", "M002", 10000);
 
   printf("--- INITIALIZATION ---\n");
 
@@ -194,10 +202,9 @@ int acconeer_main_JJH(int argc, char *argv[])
 
   acc_integration_set_periodic_wakeup(sleep_time_ms);
 
-  current_config.low_power_mode = 1;
+  current_config.update_rate = DEFAULT_UPDATE_RATE;
 
   load_config(&current_config);
-  config_menu(&current_config, resources.config);
   set_custom_config(&current_config, resources.config);
 
   while(true){
@@ -213,7 +220,7 @@ int acconeer_main_JJH(int argc, char *argv[])
         return EXIT_FAILURE;
       }
 
-      config_menu(&current_config, resources.config);
+      load_config(&current_config);
       set_custom_config(&current_config, resources.config);
       change_config = false;
     }
@@ -263,10 +270,11 @@ int acconeer_main_JJH(int argc, char *argv[])
       testTime = (sixTime < 3000) ? 3000 : sixTime; // max(3000, sixTime)
     }
 
-    HAL_UART_Receive_DMA(&DEBUG_UART_HANDLE, &debug_buf, 1);
+//    disable_uart_debug();
 
     while (!change_config)
     {
+
       acc_detector_distance_result_t result = { 0 };
 
       if (!do_detector_get_next(&resources, &sensor_cal_result, &result))
@@ -301,21 +309,17 @@ int acconeer_main_JJH(int argc, char *argv[])
 
       else
       {
-        if (current_config.low_power_mode || current_config.testing_update_rate){
-          acc_hal_integration_sensor_disable(SENSOR_ID);
-          print_distance_result(&result);
-          acc_integration_sleep_until_periodic_wakeup();
-          acc_hal_integration_sensor_enable(SENSOR_ID);
-        }
-        else{
-          print_distance_result(&result);
-        }
+        acc_hal_integration_sensor_disable(SENSOR_ID);
+        print_distance_result(&result);
+        acc_integration_sleep_until_periodic_wakeup();
+        acc_hal_integration_sensor_enable(SENSOR_ID);
       }
 
-      if (debug_buf != 0){
-        change_config = true;
-        debug_buf = 0;
+      if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_RESET){
+        int timeout = (int) (3.0f / current_config.update_rate);
+        wait_for_m_code("M805", "M806", 4 + timeout);
         printf("\nDATA_END\n");
+        change_config = true;
       }
 
       if (current_config.testing_update_rate){
@@ -327,6 +331,9 @@ int acconeer_main_JJH(int argc, char *argv[])
           current_config.true_update_rate = (float) update_counter * 1000 / ((float)(HAL_GetTick() - startTime));
           current_config.testing_update_rate = false;
           change_config = true;
+          wait_for_m_code("M807", "M808", 100);
+          printf("%.1f\n", current_config.true_update_rate);
+          HAL_Delay(100);
         }
       }
     }
@@ -338,6 +345,7 @@ int acconeer_main_JJH(int argc, char *argv[])
 
   return EXIT_SUCCESS;
 }
+
 
 static bool get_esp32_serial(char *result, uint16_t buf_size, bool wait_for_enter_key)
 {
@@ -380,23 +388,30 @@ static bool get_esp32_serial(char *result, uint16_t buf_size, bool wait_for_ente
   return true;
 }
 
+
 static bool load_config(config_settings_t *config){
   char _received_uart_data[MAX_BUFFER_SIZE];
+  uint32_t startTime = HAL_GetTick();
 
-  printf("M807\n");
+  printf("M918\n");
 
-  while (!get_esp32_serial(_received_uart_data, 33, false));
+  while (!get_esp32_serial(_received_uart_data, 40, false)){
+    if ((HAL_GetTick() - startTime) > 1000){
+      startTime = HAL_GetTick();
+      printf("M918\n");
+    }
+  }
 
   // Check if received data fits format
-  // format: "00.40,01.20,05.0,02,5,35.0,1,0.50\0"
-  //   start_m, end_m, update_rate, max_step_length, max_profile, signal_quality, reflector_shape, threshold_sensitivity
-  //   float,   float, float,       int,             int,         float,          int,             float
+  // format: "00.40,01.20,05.0,02,5,35.0,1,0.50,0,05.1\0"
+  //   start_m, end_m, update_rate, max_step_length, max_profile, signal_quality, reflector_shape, threshold_sensitivity, testing_update_rate, true_update_rate
+  //   float,   float, float,       int,             int,         float,          int,             float,                 int,                 float
   if (strchr(_received_uart_data, ',') != NULL) {
     char *token;
     int field_count = 0;
 
     token = strtok(_received_uart_data, ",");
-    while (token != NULL && field_count < 8) {
+    while (token != NULL && field_count < 10) {
       switch (field_count) {
         case 0: config->start_m = atof(token); break;
         case 1: config->end_m = atof(token); break;
@@ -406,407 +421,66 @@ static bool load_config(config_settings_t *config){
         case 5: config->signal_quality = atof(token); break;
         case 6: config->reflector_shape = atoi(token); break;
         case 7: config->threshold_sensitivity = atof(token); break;
+        case 8: config->testing_update_rate = atof(token); break;
+        case 9: config->true_update_rate = atof(token); break;
       }
       token = strtok(NULL, ",");
       field_count++;
     }
 
-    if (field_count == 8) {
-      printf("Successfully loaded configuration.\n");
+    if (field_count == 10) {
+      printf("M919\n");
       return true;
     }
   }
 
+  printf("M917\n");
   printf("Invalid config format. Default settings applied.\n");
   return false;
 }
 
-static void config_menu(config_settings_t *config, acc_detector_distance_config_t *detector_config){
-  bool good_config = false;
-  bool good_value = false;
+static bool wait_for_m_code(const char* send, const char* receive, int timeout_s){
+  uint8_t __received_uart_data[4];
+  bool received = false;
+  uint32_t _start_time = HAL_GetTick() + 1001;
+  int count = 0;
 
-  char _received_uart_data[MAX_BUFFER_SIZE];
-
-  Hprintf("\n");
-  Hprintf("       :+###%%#%%#%%#%%#%%###*:              \n");
-  Hprintf("     -#%%*==------------=*%%#:            \n");
-  Hprintf("    =%%*-:::::::::::::::::=%%+            \n");
-  Hprintf("   :%%#-::::::::::::::::::*%%=            \n");
-  Hprintf("   +%%=::::::::**-:::::::-##:.......     \n");
-  Hprintf("  .%%#-:::::::=%%%%%%%%#%%####%%%%%%%%%%%%%%%%%%%%%%%%%%%%: \n");
-  Hprintf("  *%%=::::::::*%%%%%%#=:::::::::::::::::-*%%=\n");
-  Hprintf(" :%%*-:::::::-#%%%%%%%%+::::::::::::::::::=##\n");
-  Hprintf(" *%%+::::::::*%%%%%%%%#+==========::::::::+%%+\n");
-  Hprintf(":##-:::::::-#*=------=+%%%%%%%%%%=:::::::-##:\n");
-  Hprintf("+%%+::::::::-=:::::::::*%%%%%%%%*::::::::+%%* \n");
-  Hprintf("##=::::::::::::::::::+%%%%%%%%#=:::::::-#%%: \n");
-  Hprintf("+%%*-:::::::::::::::=*%%%%%%%%%%*::::::::+%%+  \n");
-  Hprintf(" =%%%%%%%%#########***********-:::::::-##:  \n");
-  Hprintf("     .......:%%#-::::::::::::::::::*%%=   \n");
-  Hprintf("            *%%=:::::::::::::::::-*%%*    \n");
-  Hprintf("           -%%*::::::::=*******#%%%%#:     \n");
-  Hprintf("          .#%%=::::::::*%%*====-:.        \n");
-  Hprintf("          *%%*::::::::=%%%%                \n");
-  Hprintf("        :%%#+-:::::::=#%%:                \n");
-  Hprintf("       -%%%%%%%%%%%%%%%%%%%%%%%%%%%%=                 \n");
-  Hprintf("\n");
-  HAL_Delay(500);
-
-  print_config_menu(config);
-
-  while (!good_config){
-    memset(&_received_uart_data, 0, MAX_BUFFER_SIZE);
-    while (!get_esp32_serial(_received_uart_data, 1, false));
-    printf("M918\n");
-    HAL_Delay(50);
-
-    char config_char = tolower(_received_uart_data[0]);
-    good_value = false;
-
-    switch (config_char){
-
-      case 's':
-        Hprintf("\nSet the start of the measurement range. Current value: %.2f m\n", config->start_m);
-        Hprintf("Format: XX.XX\n");
-        Hprintf("  Input must match format exactly. Enter leading and trailing zeros as appropriate.\n");
-        Hprintf("  Units are in meters.\n");
-        Hprintf("Notes:\n");
-        Hprintf("  Generally advised to leave a margin of 0.1m above maximum wave height.\n");
-        Hprintf("Example:\n");
-        Hprintf("  Radar is placed 10m above average wave height, and waves height fluctuates within +/- 1m.\n");
-        Hprintf("  Start of measurement range should be set to 0.8m.\n");
-        Hprintf("  User would enter \"00.80\" into terminal with no quotes.\n\n");
-        Hprintf("M917\n");
-
-        while (!good_value){
-          while (!get_esp32_serial(_received_uart_data, 5, true));
-          Hprintf("M918\n");
-
-          float new_start_m = parse_float(_received_uart_data);
-          if (!isnan(new_start_m) && new_start_m >= 0.1f && new_start_m <= 20.0f) {
-            acc_detector_distance_config_start_set(detector_config, new_start_m);
-            Hprintf("\nStart of measurement range set to %.2f m\n", new_start_m);
-
-            Hprintf("Is this the desired value? Type Y for yes, N for no.\n\n");
-            Hprintf("M917\n");
-            while (!get_esp32_serial(_received_uart_data, 1, true));
-            Hprintf("M918\n");
-
-            config_char = tolower(_received_uart_data[0]);
-            if (config_char == 'y'){
-              config->start_m = new_start_m;
-              good_value = true;
-              Hprintf("\nValue saved.\n\n");
-              HAL_Delay(1000);
-              print_config_menu(config);
-            }
-            else{
-              Hprintf("\nPlease enter a new number between 00.10 and 20.00.\n\n");
-              Hprintf("M917\n");
-            }
-          }
-          else {
-            Hprintf("\nInvalid input. Please enter a number between 00.10 and 20.00.\n\n");
-            Hprintf("M917\n");
-          }
-        }
-        break;
-
-      case 'e':
-
-        Hprintf("\nSet the end of the measurement range. Current value: %.2f m\n", config->end_m);
-        Hprintf("Format: XX.XX\n");
-        Hprintf("  Input must match format exactly. Enter leading and trailing zeros as appropriate.\n");
-        Hprintf("  Units are in meters.\n");
-        Hprintf("Notes:\n");
-        Hprintf("  Generally advised to leave a margin of 0.1m below maximum wave height.\n");
-        Hprintf("Example:\n");
-        Hprintf("  Radar is placed 10m above average wave height, and waves height fluctuates within +/- 1m.\n");
-        Hprintf("  End of measurement range should be set to 1.2m.\n");
-        Hprintf("  User would enter \"01.20\" into terminal with no quotes.\n\n");
-        Hprintf("M917\n");
-
-        while (!good_value){
-          while (!get_esp32_serial(_received_uart_data, 5, true));
-          Hprintf("M918\n");
-
-          float new_end_m = parse_float(_received_uart_data);
-          if (!isnan(new_end_m) && new_end_m >= 0.1f && new_end_m <= 20.0f) {
-            acc_detector_distance_config_start_set(detector_config, new_end_m);
-            Hprintf("\End of measurement range set to %.2f m\n", new_end_m);
-
-            Hprintf("Is this the desired value? Type Y for yes, N for no.\n\n");
-            Hprintf("M917\n");
-            while (!get_esp32_serial(_received_uart_data, 1, true));
-            Hprintf("M918\n");
-
-            config_char = tolower(_received_uart_data[0]);
-            if (config_char == 'y'){
-              config->end_m = new_end_m;
-              good_value = true;
-              Hprintf("\nValue saved.\n\n");
-              HAL_Delay(1000);
-              print_config_menu(config);
-            }
-            else{
-              Hprintf("\nPlease enter a new number between 00.10 and 20.00.\n\n");
-              Hprintf("M917\n");
-            }
-          }
-          else {
-            Hprintf("\nInvalid input. Please enter a number between 00.10 and 20.00.\n\n");
-            Hprintf("M917\n");
-          }
-        }
-        break;
-
-      case 'u':
-        Hprintf("\nSet the update rate. Current value: %.2f Hz\n", config->update_rate);
-        Hprintf("Format: XX.X\n");
-        Hprintf("  Input must match format exactly. Enter leading and trailing zeros as appropriate.\n");
-        Hprintf("  Units are in Hertz.\n");
-        Hprintf("Notes:\n");
-        Hprintf("  Keep as low as required. Greatly affects power consumption.\n");
-        Hprintf("Example:\n");
-        Hprintf("  A measurement is required every 0.2 seconds.\n");
-        Hprintf("  Update rate should be set to 5 Hz.\n");
-        Hprintf("  User would enter \"05.0\" into terminal with no quotes.\n\n");
-        Hprintf("M917\n");
-
-        while (!good_value){
-          while (!get_esp32_serial(_received_uart_data, 4, true));
-          Hprintf("M918\n");
-
-          float new_update_rate = parse_float(_received_uart_data);
-          if (!isnan(new_update_rate) && new_update_rate >= 0.1f && new_update_rate <= 99.9f) {
-            if (new_update_rate >= 20.0f) {
-              Hprintf("\nWARNING: Actual update rate may be lower than desired.\n");
-              Hprintf("Test true update rate in configuration menu.\n");
-            }
-            Hprintf("\nUpdate rate set to %.1f Hz\n", new_update_rate);
-
-            Hprintf("Is this the desired value? Type Y for yes, N for no.\n\n");
-            Hprintf("M917\n");
-            while (!get_esp32_serial(_received_uart_data, 1, true));
-            Hprintf("M918\n");
-
-            config_char = tolower(_received_uart_data[0]);
-            if (config_char == 'y'){
-              config->update_rate = new_update_rate;
-              good_value = true;
-              Hprintf("\nValue saved.\n\n");
-              HAL_Delay(1000);
-              print_config_menu(config);
-            }
-            else{
-              Hprintf("\nPlease enter a new number between 00.1 and 99.9.\n\n");
-              Hprintf("M917\n");
-            }
-          }
-          else {
-            Hprintf("\nInvalid input. Please enter a number between 00.1 and 99.9.\n\n");
-            Hprintf("M917\n");
-          }
-        }
-      break;
-      case 'l':
-
-
-        break;
-      case 'p':
-
-
-        break;
-      case 'q':
-
-        break;
-      case 'r':
-
-        break;
-      case 't':
-
-        break;
-      case 'a':
-        if (config->start_m >= config->end_m){
-          Hprintf("\nWARNING: Start of range is greater than end of range! This must be fixed before continuing.\n\n");
-          Hprintf("\nInput is not accepted. Please send one of the characters above.\n");
-          Hprintf("M917\n");
-        }
-        else{
-          good_config = true;
-          config->testing_update_rate = true;
-          Hprintf("\nTesting actual update rate...\n");
-        }
-        break;
-
-      case 'm':
-        Hprintf("\nEnables or disables low power mode. Current value: %i\n", config->low_power_mode);
-        Hprintf("Format: X\n");
-        Hprintf("  Input must match format exactly.\n");
-        Hprintf("  Enter \"1\" to enable low power mode.\n");
-        Hprintf("  Enter \"0\" to disable low power mode.\n");
-        Hprintf("Notes:\n");
-        Hprintf("  In low power mode, the STM32 powers down between measurements. In this mode, the configuration\n");
-        Hprintf("  menu can only be called by power cycling the entire unit.\n");
-        Hprintf("  In low power mode, the actual update rate will NOT be controlled by the update set rate.\n");
-        Hprintf("  The testing of the actual update rate in the configuration menu is not affected by low power mode.\n");
-        Hprintf("Example:\n");
-        Hprintf("  The user wants to test different configuration settings to tune the radar.\n");
-        Hprintf("  Low power mode should be disabled, and the user would enter \"0\" with no quotes.\n");
-        Hprintf("  Once the user settles on a configuration (and the settings will not be changed), low power mode\n");
-        Hprintf("  should be enabled, and the user would enter \"1\" with no quotes.\n\n");
-        Hprintf("M917\n");
-
-        while (!good_value){
-          while (!get_esp32_serial(_received_uart_data, 1, true));
-          Hprintf("M918\n");
-
-          int new_power_mode = parse_int(_received_uart_data);
-          if (new_power_mode == 1 || new_power_mode == 0) {
-
-            Hprintf("\nLow power mode set to %i\n", new_power_mode);
-            Hprintf("Is this the desired value? Type Y for yes, N for no.\n\n");
-            Hprintf("M917\n");
-            while (!get_esp32_serial(_received_uart_data, 1, true));
-            Hprintf("M918\n");
-
-            config_char = tolower(_received_uart_data[0]);
-            if (config_char == 'y'){
-              config->low_power_mode = new_power_mode;
-              good_value = true;
-              Hprintf("\nValue saved.\n\n");
-              HAL_Delay(1000);
-              print_config_menu(config);
-            }
-            else{
-              Hprintf("\nPlease enter either a 0 or a 1.\n\n");
-              Hprintf("M917\n");
-            }
-          }
-          else {
-            Hprintf("\nInvalid input. Please enter either a 0 or a 1.\n\n");
-            Hprintf("M917\n");
-          }
-        }
-      break;
-
-      case 'x':
-        if (config->low_power_mode){
-          Hprintf("\nWARNING: Low power mode is enabled. In this mode, the configuration menu will not re-open unless the STM32 is\n");
-          Hprintf("power-cycled. This mode is only recommended for final deployment. Do you want to keep low power mode enabled (Y/N)?\n\n");
-          Hprintf("M917\n");
-          while (!get_esp32_serial(_received_uart_data, 1, true));
-          Hprintf("M918\n");
-
-          while (!good_value){
-            config_char = tolower(_received_uart_data[0]);
-            if (config_char == 'n'){
-              config->low_power_mode = 0;
-              good_value = true;
-              Hprintf("\nLow power mode disabled.\n\n");
-              Hprintf("WARNING: Low power mode is disabled. The actual update rate will be different from the set update rate.\n");
-              Hprintf("The actual update rate will return to the set update rate when low power mode is enabled.\n\n");
-              Hprintf("Send any character to re-open configuration menu.\n\n");
-              HAL_Delay(3000);
-            }
-            else if (config_char == 'y'){
-              good_value = true;
-              Hprintf("\nLow power mode enabled.\n\n");
-              HAL_Delay(1000);
-            }
-            else{
-              Hprintf("\nPlease enter either Y or N.\n\n");
-              Hprintf("M917\n");
-            }
-          }
-        }
-        else{
-          Hprintf("\nWARNING: Low power mode is disabled. The actual update rate will be different from the set update rate.\n");
-          Hprintf("The actual update rate will return to the set update rate when low power mode is enabled.\n\n");
-          Hprintf("Send any character to re-open configuration menu.\n\n");
-          HAL_Delay(3000);
-        }
-
-        if (config->start_m >= config->end_m){
-          Hprintf("WARNING: Start of range is greater than end of range! This must be fixed before continuing.\n");
-          Hprintf("\nPlease send one of the characters from the menu above.\n\n");
-          Hprintf("M917\n");
-        }
-        else{
-          good_config = true;
-          Hprintf("Configuration saved to SD card. Returning to normal operations.\n\n");
-          HAL_Delay(3000);
-          Hprintf("DATA_START\n");
-        }
-        break;
-
-      default:
-        Hprintf("\nInput is not accepted. Please send one of the characters above.\n\n");
-        Hprintf("M917\n");
-        break;
+  while (!received && count < timeout_s){
+    while (!get_esp32_serial(__received_uart_data, 4, false)){
+      if ((HAL_GetTick() - _start_time) > 1000){
+        _start_time = HAL_GetTick();
+        count++;
+        if (send != "\0") printf("%s\n", send);
+      }
+    }
+    if (strcmp((char*)__received_uart_data, receive) == 0) {
+      received = true;
     }
   }
+  return true;
 }
 
-static int Hprintf(const char *format, ...) {
-  va_list args;
-  int result;
+//static float parse_float(const char *string) {
+//  char *end;
+//  float result = strtof(string, &end);
+//  if (end == string || *end != '\0') {
+//      // Parsing failed
+//      return NAN;
+//  }
+//  return result;
+//}
+//
+//
+//static int parse_int(const char *string) {
+//    char *end;
+//    long result = strtol(string, &end, 10);
+//    if (end == string || *end != '\0') {
+//        // Parsing failed
+//        return -1;
+//    }
+//    return (int)result;
+//}
 
-  va_start(args, format);
-  result = vprintf(format, args);
-  va_end(args);
-
-  HAL_Delay(100);
-  return result;
-}
-
-static void print_config_menu(config_settings_t *config){
-  Hprintf("--- CONFIGURATION MENU ---\n");
-  Hprintf("Send one of the below characters to change that configuration setting.\n");
-  Hprintf("Changes will be saved automatically.\n\n");
-  Hprintf("S: Change the start of the measurement range.\n");
-  Hprintf("   Current value: %.2f m\n", config->start_m);
-  Hprintf("E: Change the end of the measurement range.\n");
-  Hprintf("   Current value: %.2f m\n", config->end_m);
-  Hprintf("U: Change the update rate. Affects power consumption.\n");
-  Hprintf("   Current value: %.1f Hz\n", config->update_rate);
-  Hprintf("L: Change the maximum step length of the measurements. Affects power consumption and resolution.\n");
-  Hprintf("   Current value: %i\n", config->max_step_length);
-  Hprintf("P: Change the measurement profile. Affects power consumption and accuracy.\n");
-  Hprintf("   Current value: %i\n", config->max_profile);
-  Hprintf("Q: Change the signal quality. Affects power consumption and accuracy.\n");
-  Hprintf("   Current value: %.1f\n", config->signal_quality);
-  Hprintf("R: Change the reflector shape.\n");
-  Hprintf("   Current value: %i (0: generic, 1: planar)\n", config->reflector_shape);
-  Hprintf("T: Change the threshold sensitivity.\n");
-  Hprintf("   Current value: %.2f\n", config->threshold_sensitivity);
-  Hprintf("M: Enables or disables low power mode.\n");
-  Hprintf("   Current value: %i (0: disabled, 1: enabled)\n", config->low_power_mode);
-  Hprintf("A: Measure the actual update rate.\n");
-  Hprintf("   True update rate: %.1f Hz\n", config->true_update_rate);
-  Hprintf("X: Exit the menu.\n\n");
-  Hprintf("M917\n");
-}
-
-static float parse_float(const char *string) {
-  char *end;
-  float result = strtof(string, &end);
-  if (end == string || *end != '\0') {
-      // Parsing failed
-      return NAN;
-  }
-  return result;
-}
-
-static int parse_int(const char *string) {
-    char *end;
-    long result = strtol(string, &end, 10);
-    if (end == string || *end != '\0') {
-        // Parsing failed
-        return -1;
-    }
-    return (int)result;
-}
 
 static void set_custom_config(config_settings_t *config, acc_detector_distance_config_t *detector_config){
   acc_detector_distance_config_start_set(detector_config, config->start_m);
@@ -824,6 +498,46 @@ static void set_custom_config(config_settings_t *config, acc_detector_distance_c
   acc_detector_distance_config_threshold_method_set(detector_config, ACC_DETECTOR_DISTANCE_THRESHOLD_METHOD_CFAR);
   acc_detector_distance_config_close_range_leakage_cancellation_set(detector_config, false);
 }
+
+
+static bool disable_uart_debug(void){
+  // Disable UART1
+  HAL_UART_DeInit(&huart1);
+
+  // Enable GPIOA clock if it's not already enabled
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  // Configure PA10 as input with pull-up
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  return true;
+}
+
+
+static bool enable_uart_debug(void){
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  // Reset GPIO pin
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  // Re-initialize UART1
+  HAL_UART_Init(&DEBUG_UART_HANDLE);
+
+  return true;
+}
+
 
 static void cleanup(distance_detector_resources_t *resources)
 {
@@ -1063,3 +777,14 @@ static void print_distance_result(const acc_detector_distance_result_t *result)
 
   printf("\n");
 }
+
+//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+//{
+//  if(GPIO_Pin == GPIO_PIN_10)
+//  {
+//    enable_uart_debug();
+//    change_config = true;
+//    printf("M806\n");
+//    printf("\nDATA_END\n");
+//  }
+//}

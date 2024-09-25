@@ -86,11 +86,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry excluding="applications|use_cases|examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src/examples/JJH"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
-						<entry excluding="example_detector_distance_low_power_off.c|example_service_subsweeps.c|example_service_sensor_off.c|example_service_sensor_hibernate.c|example_service_sensor_disable.c|example_service_multiple_configurations.c|example_service_low_power_sensor_hibernate.c|example_service_low_power_sensor_disable.c|example_service_calibration_caching.c|example_detector_presence_multiple_configurations.c|example_detector_presence_low_power_off.c|example_detector_presence_low_power_hibernate.c|example_detector_distance_with_iq_data_print.c|example_detector_distance_low_power_hibernate.c|example_detector_distance_calibration_caching.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src/examples/advanced_control"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -177,11 +176,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry excluding="applications|use_cases|examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src/examples/JJH"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
-						<entry excluding="example_detector_distance_low_power_off.c|example_service_subsweeps.c|example_service_sensor_off.c|example_service_sensor_hibernate.c|example_service_sensor_disable.c|example_service_multiple_configurations.c|example_service_low_power_sensor_hibernate.c|example_service_low_power_sensor_disable.c|example_service_calibration_caching.c|example_detector_presence_multiple_configurations.c|example_detector_presence_low_power_off.c|example_detector_presence_low_power_hibernate.c|example_detector_distance_with_iq_data_print.c|example_detector_distance_low_power_hibernate.c|example_detector_distance_calibration_caching.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src/examples/advanced_control"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
