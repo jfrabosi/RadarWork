@@ -106,7 +106,8 @@ typedef struct
   int low_power_mode;
 } config_settings_t;
 
-static bool change_config = false;
+static bool change_config = true;
+
 
 static void cleanup(distance_detector_resources_t *resources);
 
@@ -139,25 +140,16 @@ static void print_distance_result(const acc_detector_distance_result_t *result);
 static bool get_esp32_serial(char *result, uint16_t buf_size, bool wait_for_enter_key);
 
 
+static void empty_uart_input_buffer(void);
+
+
 static bool load_config(config_settings_t *config);
 
 
 static bool wait_for_m_code(const char* send, const char* receive, int timeout_s);
 
 
-//static float parse_float(const char *string);
-//
-//
-//static int parse_int(const char *string);
-
-
 static void set_custom_config(config_settings_t *config, acc_detector_distance_config_t *detector_config);
-
-
-static bool disable_uart_debug(void);
-
-
-static bool enable_uart_debug(void);
 
 
 int acconeer_main_JJH(int argc, char *argv[]);
@@ -173,9 +165,6 @@ int acconeer_main_JJH(int argc, char *argv[])
   uint32_t startTime = HAL_GetTick();
   int16_t update_counter = 0;
   uint32_t testTime = 1000;
-  uint8_t _received_uart_data[MAX_BUFFER_SIZE];
-
-  wait_for_m_code("M001", "M002", 10000);
 
   printf("--- INITIALIZATION ---\n");
 
@@ -204,8 +193,11 @@ int acconeer_main_JJH(int argc, char *argv[])
 
   current_config.update_rate = DEFAULT_UPDATE_RATE;
 
-  load_config(&current_config);
-  set_custom_config(&current_config, resources.config);
+  if (load_config(&current_config))
+  {
+    set_custom_config(&current_config, resources.config);
+    change_config = false;
+  }
 
   while(true){
 
@@ -220,9 +212,11 @@ int acconeer_main_JJH(int argc, char *argv[])
         return EXIT_FAILURE;
       }
 
-      load_config(&current_config);
-      set_custom_config(&current_config, resources.config);
-      change_config = false;
+      if (load_config(&current_config))
+      {
+        set_custom_config(&current_config, resources.config);
+        change_config = false;
+      }
     }
 
     if (!initialize_detector_resources(&resources))
@@ -232,8 +226,10 @@ int acconeer_main_JJH(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
+    HAL_Delay(500);
+
     // Print the configuration
-//    acc_detector_distance_config_log(resources.handle, resources.config);
+    acc_detector_distance_config_log(resources.handle, resources.config);
 
     /* Turn the sensor on */
     acc_hal_integration_sensor_supply_on(SENSOR_ID);
@@ -263,14 +259,17 @@ int acconeer_main_JJH(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
+    HAL_Delay(3000);
+
     if (current_config.testing_update_rate){
       update_counter = -3;
       startTime = HAL_GetTick();
-      uint32_t sixTime = sleep_time_ms * 3;
-      testTime = (sixTime < 3000) ? 3000 : sixTime; // max(3000, sixTime)
+      uint32_t sixTime = sleep_time_ms * 6;         // time period for six measurements to occur
+      testTime = (sixTime < 5000) ? 5000 : sixTime; // max(5000, sixTime)
     }
-
-//    disable_uart_debug();
+    else{
+      printf("M114\n");
+    }
 
     while (!change_config)
     {
@@ -316,10 +315,14 @@ int acconeer_main_JJH(int argc, char *argv[])
       }
 
       if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_RESET){
+        printf("M116\n");
         int timeout = (int) (3.0f / current_config.update_rate);
-        wait_for_m_code("M805", "M806", 4 + timeout);
-        printf("\nDATA_END\n");
-        change_config = true;
+        if (wait_for_m_code("M918", "M919", 4 + timeout)){
+          change_config = true;
+        }
+        else{
+          printf("\nError: TX pulled low without reply.\n");
+        }
       }
 
       if (current_config.testing_update_rate){
@@ -328,10 +331,11 @@ int acconeer_main_JJH(int argc, char *argv[])
           startTime = HAL_GetTick();
         }
         if (update_counter >= 100 || HAL_GetTick() - startTime >= testTime){
+          printf("M116\n");
           current_config.true_update_rate = (float) update_counter * 1000 / ((float)(HAL_GetTick() - startTime));
           current_config.testing_update_rate = false;
           change_config = true;
-          wait_for_m_code("M807", "M808", 100);
+          wait_for_m_code("M815", "M816", 100);
           printf("%.1f\n", current_config.true_update_rate);
           HAL_Delay(100);
         }
@@ -356,24 +360,21 @@ static bool get_esp32_serial(char *result, uint16_t buf_size, bool wait_for_ente
 
   while (received < buf_size)
   {
-    if (__HAL_UART_GET_FLAG(&DEBUG_UART_HANDLE, UART_FLAG_RXNE) == SET)
-    {
-      status = HAL_UART_Receive(&DEBUG_UART_HANDLE, &buffer[received], 1, 100);
+    status = HAL_UART_Receive(&DEBUG_UART_HANDLE, &buffer[received], 1, 100);
 
-      if (status == HAL_OK)
+    if (status == HAL_OK)
+    {
+      startTime = HAL_GetTick();
+      received++;
+      if (buffer[received - 1] == '\r')
       {
-        startTime = HAL_GetTick() - 10;
-        received++;
-        if (buffer[received - 1] == '\r')
-        {
-          buffer[received - 1] = '\0';
-          break;  // End of message
-        }
+        buffer[received - 1] = '\0';
+        break;  // End of message
       }
     }
 
     // Check for timeout (e.g., 1000ms)
-    if ((HAL_GetTick() - startTime > 1000) && !wait_for_enter_key)
+    if ((HAL_GetTick() - startTime > 100) && !wait_for_enter_key)
     {
       if (received == 0)
       {
@@ -389,18 +390,30 @@ static bool get_esp32_serial(char *result, uint16_t buf_size, bool wait_for_ente
 }
 
 
+static void empty_uart_input_buffer(void)
+{
+  uint8_t t[1];
+  while (HAL_UART_Receive(&DEBUG_UART_HANDLE, t, 1, 1) == HAL_OK);
+}
+
+
 static bool load_config(config_settings_t *config){
   char _received_uart_data[MAX_BUFFER_SIZE];
   uint32_t startTime = HAL_GetTick();
 
-  printf("M918\n");
+  empty_uart_input_buffer();
+  printf("M807\n");
 
   while (!get_esp32_serial(_received_uart_data, 40, false)){
     if ((HAL_GetTick() - startTime) > 1000){
       startTime = HAL_GetTick();
-      printf("M918\n");
+      printf("M807\n");
+      empty_uart_input_buffer();
     }
   }
+
+  printf(_received_uart_data);
+  printf("\n");
 
   // Check if received data fits format
   // format: "00.40,01.20,05.0,02,5,35.0,1,0.50,0,05.1\0"
@@ -429,57 +442,44 @@ static bool load_config(config_settings_t *config){
     }
 
     if (field_count == 10) {
-      printf("M919\n");
+      printf("M808\n");
       return true;
     }
   }
 
-  printf("M917\n");
+  printf("M806\n");
   printf("Invalid config format. Default settings applied.\n");
   return false;
 }
 
+
 static bool wait_for_m_code(const char* send, const char* receive, int timeout_s){
-  uint8_t __received_uart_data[4];
-  bool received = false;
+  char _m_code_uart[4];
   uint32_t _start_time = HAL_GetTick() + 1001;
   int count = 0;
 
-  while (!received && count < timeout_s){
-    while (!get_esp32_serial(__received_uart_data, 4, false)){
-      if ((HAL_GetTick() - _start_time) > 1000){
+  while (count < timeout_s)
+  {
+    while (!get_esp32_serial(_m_code_uart, 4, false))
+    {
+      HAL_Delay(50);
+      if ((HAL_GetTick() - _start_time) > 1000)
+      {
         _start_time = HAL_GetTick();
         count++;
-        if (send != "\0") printf("%s\n", send);
+        if (send != NULL && *send != '\0') {
+          printf("%s\n", send);
+        }
       }
     }
-    if (strcmp((char*)__received_uart_data, receive) == 0) {
-      received = true;
+
+    if (strcmp((char*)_m_code_uart, receive) == 0)
+    {
+      return true;
     }
   }
-  return true;
+  return false;
 }
-
-//static float parse_float(const char *string) {
-//  char *end;
-//  float result = strtof(string, &end);
-//  if (end == string || *end != '\0') {
-//      // Parsing failed
-//      return NAN;
-//  }
-//  return result;
-//}
-//
-//
-//static int parse_int(const char *string) {
-//    char *end;
-//    long result = strtol(string, &end, 10);
-//    if (end == string || *end != '\0') {
-//        // Parsing failed
-//        return -1;
-//    }
-//    return (int)result;
-//}
 
 
 static void set_custom_config(config_settings_t *config, acc_detector_distance_config_t *detector_config){
@@ -497,45 +497,6 @@ static void set_custom_config(config_settings_t *config, acc_detector_distance_c
   acc_detector_distance_config_peak_sorting_set(detector_config, ACC_DETECTOR_DISTANCE_PEAK_SORTING_STRONGEST);
   acc_detector_distance_config_threshold_method_set(detector_config, ACC_DETECTOR_DISTANCE_THRESHOLD_METHOD_CFAR);
   acc_detector_distance_config_close_range_leakage_cancellation_set(detector_config, false);
-}
-
-
-static bool disable_uart_debug(void){
-  // Disable UART1
-  HAL_UART_DeInit(&huart1);
-
-  // Enable GPIOA clock if it's not already enabled
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  // Configure PA10 as input with pull-up
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  return true;
-}
-
-
-static bool enable_uart_debug(void){
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  // Reset GPIO pin
-  GPIO_InitStruct.Pin = GPIO_PIN_10;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  // Re-initialize UART1
-  HAL_UART_Init(&DEBUG_UART_HANDLE);
-
-  return true;
 }
 
 
@@ -764,27 +725,22 @@ static bool do_detector_get_next(distance_detector_resources_t  *resources,
 
 static void print_distance_result(const acc_detector_distance_result_t *result)
 {
-  printf("%d detected distances", result->num_distances);
   if (result->num_distances > 0)
   {
-    printf(": ");
-
-    for (uint8_t i = 0; i < result->num_distances; i++)
-    {
-      printf("%" PRIfloat " m ", ACC_LOG_FLOAT_TO_INTEGER(result->distances[i]));
-    }
+    printf("M115\n");
+    printf("%.3f m, %.2f\n", result->distances[0], result->strengths[0]);
   }
 
-  printf("\n");
-}
-
-//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-//{
-//  if(GPIO_Pin == GPIO_PIN_10)
+//  printf("%d detected distances", result->num_distances);
+//  if (result->num_distances > 0)
 //  {
-//    enable_uart_debug();
-//    change_config = true;
-//    printf("M806\n");
-//    printf("\nDATA_END\n");
+//    printf(": ");
+//
+//    for (uint8_t i = 0; i < result->num_distances; i++)
+//    {
+//      printf("%" PRIfloat " m ", ACC_LOG_FLOAT_TO_INTEGER(result->distances[i]));
+//    }
 //  }
-//}
+//
+//  printf("\n");
+}

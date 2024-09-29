@@ -27,8 +27,9 @@
 
 /**
  * @brief Specifier for printing float type using integers.
+ * MODIFIED FOR 4 DECIMAL PLACES
  */
-#define PRIfloat "s%lu.%06lu"
+#define PRIfloat "s%lu.%02lu"
 
 
 #if defined(__GNUC__)

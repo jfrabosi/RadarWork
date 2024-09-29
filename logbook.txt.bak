@@ -73,4 +73,52 @@ Next steps:
 Also, started to look at the Adalogger Feather. It seems to use I2C with the ESP32. I'd like to store the configuration
 settings for the STM32 on the Adalogger SD card, so that it persists when the system powers down.
 
-9-XX-24 ----------------------------------------------------------------------------------------------------------------
+
+9-24-24 ----------------------------------------------------------------------------------------------------------------
+
+Finished the switch(case) functions and the dang STM32 didn't have enough FLASH memory. Not sure why STM is so stingy
+with it. Had to port the CLI to the ESP32 side, which took most of the day, but it's finally (mostly) working. Need to
+test some bug cases to make sure it all works:
+- STM loses power during menu config
+- STM loses power during update rate test
+- STM loses power during normal operation
+- STM loses power during "stop radar"
+- ESP loses power during menu config
+- ESP loses power during update rate test
+- ESP loses power during normal operation
+- ESP loses power during "stop radar"
+
+After that, need to read through the code and clean everything up (and document!!).
+
+Then, I can start on the next steps from above:
+- Add an auto range finder function
+- Save the configuration settings using the Adalogger, read after power cycling
+- Save output data to a file in the Adalogger
+- Test power cycling and bug cases above, see how files are affected
+
+
+9-28-24 ----------------------------------------------------------------------------------------------------------------
+
+Decided that following MISRA C guidelines would be a good idea (for safety/reliability, and as a learning experience),
+and it quickly devolved into MISERY C. Took me a few days, but the ESP code now (mostly) follows the MISRA guidelines,
+uses a finite-state machine model, and is overall a lot cleaner.
+
+Next steps:
+- Add Adalogger and SD card functionality (filenames based on timestamps)
+  - Debug .txt file that writes everything (make a new one every million lines, or when ESP restarts)
+  - Data .csv file that saves valid floats between DATA_START and DATA_END (new one for each DATA_START)
+  - Config .txt string to save and load config settings
+- Test the bug cases from above, squash any bugs that appear
+- Document (and clean) the ESP32 code
+- Document (and clean) the STM32 code
+- Make the FSM diagram(s) pretty
+- Do more tests
+  - Salt water tupperware (radar, then tupperware on Fo-SHIP end effector)
+  - Ceiling test (with aluminum foil?)
+  - Car test
+- Add GPS functionality
+  - Save data in CSV, or in filename?
+- Figure out how to put ESP in deep sleep mode between measurements (listening state)
+- Measure power consumption for different radar configs
+
+

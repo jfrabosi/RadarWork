@@ -1,8 +1,8 @@
-../Src/examples/JJH/jjh.c:490:13:set_custom_config	16	static
-../Src/examples/JJH/jjh.c:632:13:do_sensor_calibration	48	static
-../Src/examples/JJH/jjh.c:547:13:cleanup	8	static
-../Src/examples/JJH/jjh.c:770:13:print_distance_result	24	static
-../Src/examples/JJH/jjh.c:355:13:get_esp32_serial.constprop	96	static
-../Src/examples/JJH/jjh.c:447:13:wait_for_m_code.isra	40	static
-../Src/examples/JJH/jjh.c:397:13:load_config.isra	80	static
-../Src/examples/JJH/jjh.c:166:5:acconeer_main_JJH	448	static
+../Src/examples/JJH/jjh.c:485:13:set_custom_config	16	static
+../Src/examples/JJH/jjh.c:393:13:empty_uart_input_buffer	16	static
+../Src/examples/JJH/jjh.c:588:13:do_sensor_calibration	48	static
+../Src/examples/JJH/jjh.c:503:13:cleanup	8	static
+../Src/examples/JJH/jjh.c:354:13:get_esp32_serial.constprop	96	static
+../Src/examples/JJH/jjh.c:456:13:wait_for_m_code	40	static
+../Src/examples/JJH/jjh.c:400:13:load_config	88	static
+../Src/examples/JJH/jjh.c:158:5:acconeer_main_JJH	456	static

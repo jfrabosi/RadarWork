@@ -97,30 +97,4 @@ Then, I can start on the next steps from above:
 - Test power cycling and bug cases above, see how files are affected
 
 
-9-28-24 ----------------------------------------------------------------------------------------------------------------
-
-Decided that following MISRA C guidelines would be a good idea (for safety/reliability, and as a learning experience),
-and it quickly devolved into MISERY C. Took me a few days, but the ESP code now (mostly) follows the MISRA guidelines,
-uses a finite-state machine model, and is overall a lot cleaner.
-
-Next steps:
-- Add Adalogger and SD card functionality (filenames based on timestamps)
-  - Debug .txt file that writes everything (make a new one every million lines, or when ESP restarts)
-  - Data .csv file that saves valid floats between DATA_START and DATA_END (new one for each DATA_START)
-    - Need a way to parse valid floats from the M115 string...
-  - Config .txt string to save and load config settings
-- Test the bug cases from above, squash any bugs that appear
-- Document (and clean) the ESP32 code
-- Document (and clean) the STM32 code
-- Make the FSM diagram(s) pretty
-- Do more tests
-  - Salt water tupperware (radar, then tupperware on Fo-SHIP end effector)
-  - Ceiling test (with aluminum foil?)
-  - Car test
-- Add GPS functionality
-  - Save data in CSV, or in filename?
-- Figure out how to put ESP in deep sleep mode between measurements (listening state)
-- Measure power consumption for different radar configs
-
-
-9-30-24 ----------------------------------------------------------------------------------------------------------------
+9-25-24 ----------------------------------------------------------------------------------------------------------------
