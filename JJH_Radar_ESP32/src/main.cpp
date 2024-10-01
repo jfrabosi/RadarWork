@@ -2,7 +2,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <Arduino.h>
-#include "BluetoothSerial.h"
+#include <BluetoothSerial.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <FS.h>
+#include <SD.h>
+#include "RTClib.h"
 #include <driver/uart.h>
 
 // check if Bluetooth is available
@@ -21,6 +26,14 @@
 #define BT_TIMEOUT_MINS 10U
 #define DEVICE_NAME "ESP32_HUZZAH32"
 #define PRINT_DEBUG_TO_BT false
+
+// #define REASSIGN_PINS
+// int sck = 5;
+// int miso = 19;
+// int mosi = 18;
+// int cs = 33;
+
+
 
 // --- CUSTOM TYPEDEFS AND STRUCTS ---
 typedef float float32_t;
@@ -57,6 +70,10 @@ bool BT_on = true;
 // config settings struct
 ConfigSettings current_config;
 
+// data-logging
+RTC_PCF8523 rtc;
+const int chipSelect = 33;
+
 // state-tracking
 uint8_t state = STATE_LOAD_CONFIG_SD;
 bool sending_config = false;
@@ -86,6 +103,14 @@ bool save_new_update_rate(ConfigSettings *config);
 void printf_debug(const char *format, ...);
 void printf_debug_stm32(const char *format, ...);
 void printf_stm32(const char *format, ...);
+void setup_rtc(void);
+void setup_sd_card(void);
+void list_dir(fs::FS &fs, const char *dirname, uint8_t levels);
+void read_file(fs::FS &fs, const char *path);
+void write_file(fs::FS &fs, const char *path, const char *message);
+void append_file(fs::FS &fs, const char *path, const char *message);
+void rename_file(fs::FS &fs, const char *path1, const char *path2);
+void delete_file(fs::FS &fs, const char *path);
 
 // --- STATE 0: INIT_ESP ---
 void setup()
@@ -100,6 +125,12 @@ void setup()
 
   // start STM32 serial connection
   Serial32.begin(921600, SERIAL_8N1, 16, 17);
+
+  // set up RTC
+  setup_rtc();
+
+  // set up SD card
+  setup_sd_card();
   
   // set up LED pin, flash for visual indication
   pinMode(LED_BUILTIN, OUTPUT);
@@ -148,6 +179,7 @@ void loop()
     if (read_until_newline_stm32(buffer_S2, MAX_BUFFER_SIZE))
     {
       uint16_t code_S2 = check_for_m_code(buffer_S2);
+      DateTime d_now;
 
       switch (code_S2)
       {
@@ -169,7 +201,11 @@ void loop()
             read_until_newline_stm32(buffer_S2, MAX_BUFFER_SIZE);
           }
           printf_debug_stm32("M115");
-          printf_stm32("%s", buffer_S2);
+          d_now = rtc.now();
+          printf_stm32("[%02d/%02d/%02d %02d:%02d:%02d] %s",
+                        d_now.year() % 100, d_now.month(), d_now.day(), 
+                        d_now.hour(), d_now.minute(), d_now.second(), 
+                        buffer_S2);
           break;
         
         // M116: Denotes end of data
@@ -234,7 +270,7 @@ void loop()
     if (SerialBT.available()){
 
       // clear the input, we don't need it
-      char _input = SerialBT.read();
+      (void) SerialBT.read();
 
       // stop the radar
       uint32_t radar_time_delay = (uint32_t) (3000.0f / current_config.update_rate) + 1000;
@@ -1123,10 +1159,9 @@ void printf_BT_slow(const char *format, ...)
 {
   va_list args;
   char buf[256]; // Adjust size as needed
-  int result;
 
   va_start(args, format);
-  result = vsnprintf(buf, sizeof(buf), format, args);
+  (void) vsnprintf(buf, sizeof(buf), format, args);
   va_end(args);
 
   if (BT_on)
@@ -1159,10 +1194,9 @@ void printf_debug(const char *format, ...)
 {
   va_list args;
   char buf[256]; // Adjust size as needed
-  int result;
 
   va_start(args, format);
-  result = vsnprintf(buf, sizeof(buf), format, args);
+  (void) vsnprintf(buf, sizeof(buf), format, args);
   va_end(args);
 
   if (BT_on && PRINT_DEBUG_TO_BT)
@@ -1181,10 +1215,9 @@ void printf_debug_stm32(const char *format, ...)
 {
   va_list args;
   char buf[256]; // Adjust size as needed
-  int result;
 
   va_start(args, format);
-  result = vsnprintf(buf, sizeof(buf), format, args);
+  (void) vsnprintf(buf, sizeof(buf), format, args);
   va_end(args);
 
   if (BT_on && PRINT_DEBUG_TO_BT)
@@ -1203,10 +1236,9 @@ void printf_stm32(const char *format, ...)
 {
   va_list args;
   char buf[256]; // Adjust size as needed
-  int result;
 
   va_start(args, format);
-  result = vsnprintf(buf, sizeof(buf), format, args);
+  (void) vsnprintf(buf, sizeof(buf), format, args);
   va_end(args);
 
   if (BT_on)
@@ -1276,4 +1308,194 @@ void print_CP(void)
   printf_BT_slow("       -%%%%%%%%%%%%%%%%%%%%%%%%%%%%=                 ");
   printf_BT_slow("");
   delay(500);
+}
+
+
+void setup_rtc()
+{
+  if (!rtc.begin())
+  {
+    Serial.println("Couldn't find RTC");
+    Serial.flush();
+    while (1) delay(10);
+  }
+
+  if (!rtc.initialized() || rtc.lostPower()) 
+  {
+    Serial.println("RTC is NOT initialized, let's set the time!");
+    delay(3000);
+    // When time needs to be set on a new device, or after a power loss, the
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    // This line sets the RTC with an explicit date & time, for example to set
+    // January 21, 2014 at 3am you would call:
+    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+    //
+    // Note: allow 2 seconds after inserting battery or applying external power
+    // without battery before calling adjust(). This gives the PCF8523's
+    // crystal oscillator time to stabilize. If you call adjust() very quickly
+    // after the RTC is powered, lostPower() may still return true.
+  }
+
+  rtc.start();
+
+  DateTime now = rtc.now();
+  Serial.print(now.year(), DEC);
+  Serial.print('/');
+  Serial.print(now.month(), DEC);
+  Serial.print('/');
+  Serial.print(now.day(), DEC);
+  Serial.print(" ");
+  Serial.print(now.hour(), DEC);
+  Serial.print(':');
+  Serial.print(now.minute(), DEC);
+  Serial.print(':');
+  Serial.print(now.second(), DEC);
+  Serial.println();
+}
+
+
+void list_dir(fs::FS &fs, const char *dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\n", dirname);
+
+  File root = fs.open(dirname);
+  if (!root) {
+    Serial.println("Failed to open directory");
+    return;
+  }
+  if (!root.isDirectory()) {
+    Serial.println("Not a directory");
+    return;
+  }
+
+  File file = root.openNextFile();
+  while (file) {
+    if (file.isDirectory()) {
+      Serial.print("  DIR : ");
+      Serial.println(file.name());
+      if (levels) {
+        list_dir(fs, file.name(), levels - 1);
+      }
+    } else {
+      Serial.print("  FILE: ");
+      Serial.print(file.name());
+      Serial.print("  SIZE: ");
+      Serial.println(file.size());
+    }
+    file = root.openNextFile();
+  }
+}
+
+
+void read_file(fs::FS &fs, const char *path) {
+  Serial.printf("Reading file: %s\n", path);
+
+  File file = fs.open(path);
+  if (!file) {
+    Serial.println("Failed to open file for reading");
+    return;
+  }
+
+  Serial.print("Read from file: ");
+  while (file.available()) {
+    Serial.write(file.read());
+  }
+  file.close();
+}
+
+
+void write_file(fs::FS &fs, const char *path, const char *message) {
+  Serial.printf("Writing file: %s\n", path);
+
+  File file = fs.open(path, FILE_WRITE);
+  if (!file) {
+    Serial.println("Failed to open file for writing");
+    return;
+  }
+  if (file.print(message)) {
+    Serial.println("File written");
+  } else {
+    Serial.println("Write failed");
+  }
+  file.close();
+}
+
+
+void append_file(fs::FS &fs, const char *path, const char *message) {
+  Serial.printf("Appending to file: %s\n", path);
+
+  File file = fs.open(path, FILE_APPEND);
+  if (!file) {
+    Serial.println("Failed to open file for appending");
+    return;
+  }
+  if (file.print(message)) {
+    Serial.println("Message appended");
+  } else {
+    Serial.println("Append failed");
+  }
+  file.close();
+}
+
+
+void rename_file(fs::FS &fs, const char *path1, const char *path2) {
+  Serial.printf("Renaming file %s to %s\n", path1, path2);
+  if (fs.rename(path1, path2)) {
+    Serial.println("File renamed");
+  } else {
+    Serial.println("Rename failed");
+  }
+}
+
+
+void deleteFile(fs::FS &fs, const char *path) {
+  Serial.printf("Deleting file: %s\n", path);
+  if (fs.remove(path)) {
+    Serial.println("File deleted");
+  } else {
+    Serial.println("Delete failed");
+  }
+}
+
+
+void setup_sd_card(void)
+{
+  Serial.println("\n\n\nInitializing SPI...");
+  // SPI.begin(5, 19, 18, 33);
+  delay(3000);
+
+  Serial.print("Initializing SD card...");
+
+  if (!SD.begin()) {
+    Serial.println("initialization failed. Things to check:");
+    Serial.println("1. is a card inserted?");
+    Serial.println("2. is your wiring correct?");
+    Serial.println("3. did you change the chipSelect pin to match your shield or module?");
+    Serial.println("Note: press reset button on the board and reopen this Serial Monitor after fixing your issue!");
+    while (true);
+  }
+
+  Serial.println("initialization done.\n");
+
+  uint8_t cardType = SD.cardType();
+
+  if (cardType == CARD_NONE) {
+    Serial.println("No SD card attached");
+    return;
+  }
+
+  Serial.print("SD Card Type: ");
+  if (cardType == CARD_MMC) {
+    Serial.println("MMC");
+  } else if (cardType == CARD_SD) {
+    Serial.println("SDSC");
+  } else if (cardType == CARD_SDHC) {
+    Serial.println("SDHC");
+  } else {
+    Serial.println("UNKNOWN");
+  }
+
+  list_dir(SD, "/", 0);
+  Serial.printf("Total space: %lluMB\n", SD.totalBytes() / (1024 * 1024));
+  Serial.printf("Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
 }

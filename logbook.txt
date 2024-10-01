@@ -124,3 +124,17 @@ Next steps:
 
 
 9-30-24 ----------------------------------------------------------------------------------------------------------------
+
+After blood, sweat, and many tears, I am able to interface with the SD card using the ESP. A couple of hours of
+debugging and web-sleuthing led to the discovery that the current espressif32 platform version breaks the SD card
+library; I manually set it to a version that works (3.5.0). Doesn't seem to be causing issues with anything else, but
+kind of a bummer for future PlatformIO projects.
+
+Tomorrow, I'll add the functions into the main code - all messages will be saved to debug.txt, all data will be saved to
+data.csv, and the config will be saved to config.csv. Then, I'll get a way to name the debug and data files based on the
+current timestamp. After that, I'll find a way to load the config from config.csv. 
+
+Then comes a decision: test bug cases or add GPS functionality? My vote is for GPS, since it can be used for the RTC.
+
+I'll be leaving on Thursday early afternoon for SLO, so I should make sure I have everything tidied up by Wednesday
+night at the latest.

@@ -107,6 +107,7 @@ Next steps:
 - Add Adalogger and SD card functionality (filenames based on timestamps)
   - Debug .txt file that writes everything (make a new one every million lines, or when ESP restarts)
   - Data .csv file that saves valid floats between DATA_START and DATA_END (new one for each DATA_START)
+    - Need a way to parse valid floats from the M115 string...
   - Config .txt string to save and load config settings
 - Test the bug cases from above, squash any bugs that appear
 - Document (and clean) the ESP32 code
@@ -122,3 +123,4 @@ Next steps:
 - Measure power consumption for different radar configs
 
 
+9-30-24 ----------------------------------------------------------------------------------------------------------------
