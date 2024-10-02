@@ -19,9 +19,9 @@
 ../Src/integration/acc_integration_stm32.c:507:6:acc_integration_sleep_us	16	static,ignoring_inline_asm
 ../Src/integration/acc_integration_stm32.c:531:6:acc_integration_set_periodic_wakeup	16	static
 ../Src/integration/acc_integration_stm32.c:538:13:acc_integration_prepare_stop_1	8	static
-../Src/integration/acc_integration_stm32.c:556:13:acc_integration_resume_stop_1	8	static
-../Src/integration/acc_integration_stm32.c:590:6:acc_integration_sleep_until_periodic_wakeup	16	static
-../Src/integration/acc_integration_stm32.c:626:10:acc_integration_get_time	8	static
-../Src/integration/acc_integration_stm32.c:632:7:acc_integration_mem_alloc	16	static
-../Src/integration/acc_integration_stm32.c:638:7:acc_integration_mem_calloc	16	static
-../Src/integration/acc_integration_stm32.c:644:6:acc_integration_mem_free	16	static
+../Src/integration/acc_integration_stm32.c:557:13:acc_integration_resume_stop_1	8	static
+../Src/integration/acc_integration_stm32.c:592:6:acc_integration_sleep_until_periodic_wakeup	16	static
+../Src/integration/acc_integration_stm32.c:628:10:acc_integration_get_time	8	static
+../Src/integration/acc_integration_stm32.c:634:7:acc_integration_mem_alloc	16	static
+../Src/integration/acc_integration_stm32.c:640:7:acc_integration_mem_calloc	16	static
+../Src/integration/acc_integration_stm32.c:646:6:acc_integration_mem_free	16	static

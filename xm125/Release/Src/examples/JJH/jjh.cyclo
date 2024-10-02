@@ -1,8 +1,7 @@
-../Src/examples/JJH/jjh.c:485:13:set_custom_config	1
-../Src/examples/JJH/jjh.c:393:13:empty_uart_input_buffer	2
-../Src/examples/JJH/jjh.c:588:13:do_sensor_calibration	6
-../Src/examples/JJH/jjh.c:503:13:cleanup	2
-../Src/examples/JJH/jjh.c:354:13:get_esp32_serial.constprop	6
-../Src/examples/JJH/jjh.c:456:13:wait_for_m_code	6
-../Src/examples/JJH/jjh.c:400:13:load_config	16
-../Src/examples/JJH/jjh.c:158:5:acconeer_main_JJH	38
+../Src/examples/JJH/jjh.c:486:13:set_custom_config	1
+../Src/examples/JJH/jjh.c:394:13:empty_uart_input_buffer	2
+../Src/examples/JJH/jjh.c:589:13:do_sensor_calibration	6
+../Src/examples/JJH/jjh.c:504:13:cleanup	2
+../Src/examples/JJH/jjh.c:355:13:get_esp32_serial.constprop	6
+../Src/examples/JJH/jjh.c:401:13:load_config	16
+../Src/examples/JJH/jjh.c:158:5:acconeer_main_JJH	41

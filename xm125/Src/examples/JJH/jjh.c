@@ -273,7 +273,6 @@ int acconeer_main_JJH(int argc, char *argv[])
 
     while (!change_config)
     {
-
       acc_detector_distance_result_t result = { 0 };
 
       if (!do_detector_get_next(&resources, &sensor_cal_result, &result))
@@ -310,9 +309,12 @@ int acconeer_main_JJH(int argc, char *argv[])
       {
         acc_hal_integration_sensor_disable(SENSOR_ID);
         print_distance_result(&result);
+        printf("M197\n");
         acc_integration_sleep_until_periodic_wakeup();
+        printf("M198\n");
         acc_hal_integration_sensor_enable(SENSOR_ID);
       }
+
 
       if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_RESET){
         printf("M116\n");
@@ -335,8 +337,7 @@ int acconeer_main_JJH(int argc, char *argv[])
           current_config.true_update_rate = (float) update_counter * 1000 / ((float)(HAL_GetTick() - startTime));
           current_config.testing_update_rate = false;
           change_config = true;
-          wait_for_m_code("M815", "M816", 100);
-          printf("%.1f\n", current_config.true_update_rate);
+          printf("M815 %.1f\n", current_config.true_update_rate);
           HAL_Delay(100);
         }
       }
@@ -727,8 +728,11 @@ static void print_distance_result(const acc_detector_distance_result_t *result)
 {
   if (result->num_distances > 0)
   {
-    printf("M115\n");
-    printf("%.3f m, %.2f\n", result->distances[0], result->strengths[0]);
+    printf("M115 %.3f m, %.2f\n", result->distances[0], result->strengths[0]);
+  }
+  else
+  {
+    printf("M317\n");
   }
 
 //  printf("%d detected distances", result->num_distances);
