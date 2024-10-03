@@ -4,7 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="23069bbf-cad5-41cb-9e0f-67f91cf2f356" name="Changes" comment="" />
+    <list default="true" id="23069bbf-cad5-41cb-9e0f-67f91cf2f356" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../JJH_Radar_ESP32/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../JJH_Radar_ESP32/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../logbook.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../logbook.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../logbook.txt.bak" beforeDir="false" afterPath="$PROJECT_DIR$/../logbook.txt.bak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/.cproject" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/.cproject" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/Release/Src/examples/JJH/jjh.cyclo" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/Release/Src/examples/JJH/jjh.cyclo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/Release/Src/examples/JJH/jjh.o" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/Release/Src/examples/JJH/jjh.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/Release/Src/examples/JJH/jjh.su" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/Release/Src/examples/JJH/jjh.su" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/Release/xm125.elf" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/Release/xm125.elf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/Release/xm125.list" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/Release/xm125.list" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/Release/xm125.map" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/Release/xm125.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../xm125/Src/examples/JJH/jjh.c" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/Src/examples/JJH/jjh.c" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,6 +45,7 @@
   "keyToString": {
     "Python.ascii.executor": "Run",
     "Python.main.executor": "Run",
+    "Python.plotter.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",

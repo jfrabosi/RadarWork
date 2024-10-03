@@ -151,14 +151,26 @@ which makes using it on mobile much more user-friendly.
 
 Next steps:
 - Finish the menu option for setting the text width
-- Add menu option for renaming the BT connection (add to config struct!)
-- Add menu option for setting the BT timeout (add to config struct!)
-- If BT times out, save the config to the SD card
+- Make sure no_data doesn't print during update rate test
+- Make the time increment for data based on millis(), not rtc
+	- use rtc for initial time
+
+
+10-2-24 ----------------------------------------------------------------------------------------------------------------
+
+Finished the above steps! It's in a good place for an in-person demo - excited to show it off.
+
+My next steps, when I return, are:
+- Modify the config menu so that if BT_on turns off, it exits to the listening state and restarts the radar
+	- maybe add a timeout to the read_uart_bt function?
 - Add GPS support
 	- Add lat/long/elev to config struct
 	- Add lat/long/elev to file naming
 	- Update time on RTC every 5 mins using GPS, print in datalog if it changes
 	- Update lat/long/elev every 5 mins
-- Do a handful of tests powering only from solar bank, power-cycling components, etc.
-- Check debug and data logs
-- Push code to Github
+	- Modify configuration for low power mode (https://content.u-blox.com/sites/default/files/products/documents/u-blox6_ReceiverDescrProtSpec_%28GPS.G6-SW-10018%29_Public.pdf)
+- Add ESP32 low-power mode
+
+
+10-3-24 ----------------------------------------------------------------------------------------------------------------
+

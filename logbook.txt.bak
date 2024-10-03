@@ -139,3 +139,35 @@ Then comes a decision: test bug cases or add GPS functionality? My vote is for G
 I'll be leaving on Thursday early afternoon for SLO, so I should make sure I have everything tidied up by Wednesday
 night at the latest.
 
+
+10-1-24 ----------------------------------------------------------------------------------------------------------------
+
+Added the SD card saving functions. Now, a new debug file is created every time the ESP32 resets, and a new data file is
+made when the data collection restarts (on powerup and between config menu settings). Also, got a radar_config.txt file
+to save the current config in.
+
+Changed the print settings a bit to read better on Bluetooth. Now, I can control the text width output on the BT UART,
+which makes using it on mobile much more user-friendly.
+
+Next steps:
+- Finish the menu option for setting the text width
+- Make sure no_data doesn't print during update rate test
+- Make the time increment for data based on millis(), not rtc
+	- use rtc for initial time
+
+
+10-2-24 ----------------------------------------------------------------------------------------------------------------
+
+Finished the above steps! It's in a good place for an in-person demo - excited to show it off.
+
+My next steps, when I return, are:
+- Modify the config menu so that if BT_on turns off, it exits to the listening state and restarts the radar
+	- maybe add a timeout to the read_uart_bt function?
+- Add GPS support
+	- Add lat/long/elev to config struct
+	- Add lat/long/elev to file naming
+	- Update time on RTC every 5 mins using GPS, print in datalog if it changes
+	- Update lat/long/elev every 5 mins
+	- Modify configuration for low power mode (https://content.u-blox.com/sites/default/files/products/documents/u-blox6_ReceiverDescrProtSpec_%28GPS.G6-SW-10018%29_Public.pdf)
+- Add ESP32 low-power mode
+

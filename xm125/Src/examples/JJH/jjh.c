@@ -76,8 +76,9 @@ typedef enum
 
 #define SENSOR_ID (1U)
 #define SENSOR_TIMEOUT_MS (2000U)
-#define DEFAULT_UPDATE_RATE (15.0f)
+#define DEFAULT_UPDATE_RATE (3.0f)
 #define MAX_BUFFER_SIZE 64
+#define HAL_GETTICK_SCALAR 1.00f //1.56f
 
 typedef struct
 {
@@ -107,7 +108,7 @@ typedef struct
 } config_settings_t;
 
 static bool change_config = true;
-
+uint32_t sleep_time_ms;
 
 static void cleanup(distance_detector_resources_t *resources);
 
@@ -187,7 +188,7 @@ int acconeer_main_JJH(int argc, char *argv[])
 
   set_config(resources.config, DISTANCE_PRESET_CONFIG_BALANCED);
 
-  uint32_t sleep_time_ms = (uint32_t)(1000.0f / DEFAULT_UPDATE_RATE);
+  sleep_time_ms = (uint32_t)(1000.0f / DEFAULT_UPDATE_RATE);
 
   acc_integration_set_periodic_wakeup(sleep_time_ms);
 
@@ -330,14 +331,12 @@ int acconeer_main_JJH(int argc, char *argv[])
       if (current_config.testing_update_rate){
         update_counter++;
         if (update_counter == 0){
-          startTime = HAL_GetTick();
+          printf("M814\n");
         }
-        if (update_counter >= 100 || HAL_GetTick() - startTime >= testTime){
-          printf("M116\n");
-          current_config.true_update_rate = (float) update_counter * 1000 / ((float)(HAL_GetTick() - startTime));
+        if (update_counter >= 100 || (HAL_GetTick() - startTime) >= testTime){
           current_config.testing_update_rate = false;
           change_config = true;
-          printf("M815 %.1f\n", current_config.true_update_rate);
+          printf("M815 %i\n", update_counter);
           HAL_Delay(100);
         }
       }
@@ -492,7 +491,7 @@ static void set_custom_config(config_settings_t *config, acc_detector_distance_c
   acc_detector_distance_config_threshold_sensitivity_set(detector_config, config->threshold_sensitivity);
   acc_detector_distance_config_signal_quality_set(detector_config, config->signal_quality);
 
-  uint32_t sleep_time_ms = (uint32_t)(1000.0f / config->update_rate);
+  sleep_time_ms = (uint32_t)(1000.0f * HAL_GETTICK_SCALAR / config->update_rate);
   acc_integration_set_periodic_wakeup(sleep_time_ms);
 
   acc_detector_distance_config_peak_sorting_set(detector_config, ACC_DETECTOR_DISTANCE_PEAK_SORTING_STRONGEST);

@@ -55,6 +55,18 @@ typedef struct
   uint8_t text_width;
 } ConfigSettings;
 
+typedef struct
+{
+  uint16_t year;
+  uint8_t month;
+  uint8_t day;
+  uint8_t hour;
+  uint8_t minute;
+  uint8_t second;
+  uint16_t millisecond;
+} DateTimeMS;
+
+
 // --- GLOBAL VARIABLES ---
 
 // serial connections
@@ -67,6 +79,8 @@ bool BT_on = true;
 bool gibberish_blocker = false;
 bool printing_config = false;
 uint8_t text_width = 40;
+bool serial_plotter = false;
+uint32_t serial_plotter_init;
 
 // config settings struct
 ConfigSettings current_config;
@@ -88,6 +102,9 @@ bool sending_config = false;
 
 // time-keeping
 uint32_t start_time_BT = millis();
+DateTimeMS init_time;
+uint32_t init_millis;
+uint32_t init_814;
 
 // --- FUNCTION PROTOTYPES --- 
 bool get_uart_BT(char *result, uint16_t buf_size, uint32_t timeout);
@@ -121,8 +138,12 @@ void delete_file(fs::FS &fs, const char *path);
 bool start_new_debug_file(char** debug_file_path);
 bool start_new_data_file(char** data_file_path);
 void flush_debug_buffer(void);
-uint32_t millis_mod_1000(void);
 void check_sizes(void);
+DateTimeMS timekeeper(DateTimeMS initial_time, uint32_t initial_millis);
+uint8_t days_in_month(uint8_t month, uint16_t year);
+bool is_leap_year(uint16_t year);
+void set_init_time(DateTimeMS *initial_time, uint32_t *initial_millis);
+void printf_serial_plotter(const char *format, ...);
 
 // --- STATE 0: INIT_ESP ---
 void setup()
@@ -143,6 +164,9 @@ void setup()
 
   // set up RTC
   setup_rtc();
+
+  // set initial time for datalogging
+  set_init_time(&init_time, &init_millis);
 
   // set up SD card
   setup_sd_card();
@@ -206,7 +230,8 @@ void loop()
     if (read_until_newline_stm32(buffer_S2, MAX_BUFFER_SIZE))
     {
       uint16_t code_S2 = check_for_m_code(buffer_S2);
-      DateTime d_now;
+      DateTimeMS d_now;
+      uint32_t end_814;
       char* m_code_pos = nullptr;
 
       switch (code_S2)
@@ -235,21 +260,38 @@ void loop()
           {
             // Move the pointer to the character after "M115 "
             char* data_start = m_code_pos + 5;
-
-            d_now = rtc.now();
-            if (!current_config.testing_update_rate)
+            
+            if (serial_plotter)
             {
-              printf_datalog("[%02d/%02d/%02d %02d:%02d:%02d.%03u] %s",
-                            d_now.year() % 100, d_now.month(), d_now.day(), 
-                            d_now.hour(), d_now.minute(), d_now.second(), millis_mod_1000(),
-                            data_start);
+              // Find the position of the next space
+              char* space_pos = strchr(data_start, ' ');
+              
+              if (space_pos != nullptr)
+              {
+                // Null-terminate the string at the space position
+                *space_pos = '\0';
+              }
+
+              printf_serial_plotter("%s", data_start);
             }
             else
             {
-              printf_debug_stm32("[%02d/%02d/%02d %02d:%02d:%02d.%03u] %s",
-                                  d_now.year() % 100, d_now.month(), d_now.day(), 
-                                  d_now.hour(), d_now.minute(), d_now.second(), millis_mod_1000(),
-                                  data_start);
+
+              d_now = timekeeper(init_time, init_millis);
+              if (!current_config.testing_update_rate)
+              {
+                printf_datalog("[%02d/%02d/%02d %02d:%02d:%02d.%03u] %s",
+                              d_now.year % 100, d_now.month, d_now.day, 
+                              d_now.hour, d_now.minute, d_now.second, d_now.millisecond,
+                              data_start);
+              }
+              else
+              {
+                printf_debug_stm32("[%02d/%02d/%02d %02d:%02d:%02d.%03u] %s",
+                                    d_now.year % 100, d_now.month, d_now.day, 
+                                    d_now.hour, d_now.minute, d_now.second, d_now.millisecond,
+                                    data_start);
+              }
             }
           }
           break;
@@ -264,7 +306,7 @@ void loop()
         // M317: No distance data returned for measurement
         case 317:
           Serial.println("STM32: no_dists");
-          if (BT_on) SerialBT.println("STM32: no_dists");
+          if (BT_on && !current_config.testing_update_rate) SerialBT.println("STM32: no_dists");
           gibberish_blocker = false;
           break;
 
@@ -279,8 +321,16 @@ void loop()
           }
           break;
 
+        // M814: Starting update rate test
+        case 814:
+          init_814 = millis();
+          printf_debug_stm32("M814");
+          gibberish_blocker = false;
+          break;
+
         // M815: Update rate test completed, waiting for acknowledgement
         case 815: 
+          end_814 = millis();
           printf_debug_stm32("M815");
           gibberish_blocker = false;
           current_config.testing_update_rate = false;
@@ -292,16 +342,17 @@ void loop()
             // Move the pointer to the character after "M115 "
             char* data_start = m_code_pos + 5;
             
-            float32_t new_update_rate = parse_float(data_start);
+            uint8_t update_count = parse_int(data_start);
             printf_debug_stm32("%s", data_start);
-            if (!isnan(new_update_rate))
+            if (update_count >= 0 && update_count <= 101) 
             {
+              float32_t new_update_rate = (float32_t) update_count * 1000.0f / (float32_t) (end_814-init_814);
               printf_BT_slow("Actual update rate measured as %02.1f Hz.", new_update_rate);
               current_config.true_update_rate = new_update_rate;
             }
             else
             {
-              printf_BT_slow("NAN returned, try update rate test again.");
+              printf_BT_slow("Bad value returned, try update rate test again.");
             }
           }
 
@@ -370,11 +421,29 @@ void loop()
         print_config_menu(&current_config);
       }
     }
+
+    // check for serial plotter timeout
+    if (serial_plotter && (millis() - serial_plotter_init) > 60000)
+    {
+      // stop the radar
+      uint32_t radar_time_delay = (uint32_t) (3000.0f / current_config.update_rate) + 1000;
+      if (stop_radar(radar_time_delay, 3000UL))
+      {
+        state = STATE_CONFIG_MENU;
+        print_CP();
+        print_config_menu(&current_config);
+      }
+    }
   }
 
   // --- STATE 3: CONFIG_MENU ---
   else if (state == STATE_CONFIG_MENU)
   {
+    if (!BT_on)
+    {
+      // send config to STM or start radar
+    }
+
     char buffer_S3_BT[MAX_BUFFER_SIZE];
     char buffer_S3_STM[MAX_BUFFER_SIZE];
 
@@ -418,7 +487,9 @@ void loop()
     {
       char config_setting = tolower(buffer_S3_BT[0]);
       bool good_setting = false;
-      
+      start_time_BT = millis();
+      serial_plotter = false;
+
       switch(config_setting)
       {
         case 's':
@@ -669,14 +740,14 @@ void loop()
               }
               else
               {
-                printf_BT_slow("Please enter an integer between 1 and 99, inclusive.");
+                printf_BT_slow("Please enter an integer between 01 and 99, inclusive.");
                 print_n();
                 print_input();
               }
             }
             else
             {
-              printf_BT_slow("Invalid input. Please enter an integer between 1 and 99, inclusive.");
+              printf_BT_slow("Invalid input. Please enter an integer between 01 and 99, inclusive.");
               print_n();
               print_input();
             }
@@ -934,32 +1005,30 @@ void loop()
 
         case 'w':
           print_n();
-          printf_BT_slow("Set the text width for the Bluetooth UART output. Current value: %i characters", current_config.text_width);
+          printf_BT_slow("Set the text width for the Bluetooth UART output. Current value: %03i characters", current_config.text_width);
           printing_config = true;
-          printf_BT_slow("Format: XX");
-          printf_BT_slow(" Input must match format exactly. Enter a single integer between 0 and 5, inclusive.");
-          printf_BT_slow(" Units are arbitrary.");
+          printf_BT_slow("Format: XXX");
+          printf_BT_slow(" Input must match format exactly. Enter a single integer between 010 and 140, inclusive.");
+          printf_BT_slow(" Alternatively, enter \"000\" to disable text wrapping.");
           printf_BT_slow("Notes:");
-          printf_BT_slow(" Measurement profile is used to set the length and shape of the emitted radio pulse.");
-          printf_BT_slow(" Higher profiles transmit more energy, increasing signal-to-noise ratio and range.");
-          printf_BT_slow(" Keep profile as low as possible. Greatly affects power consumption and maximum possible update rate.");
+          printf_BT_slow(" The text in the Bluetooth terminal can be adjusted for the width of your device.");
           printf_BT_slow("Example:");
-          printf_BT_slow(" The user starts the radar with maximum profile setting of 2, but can only detect waves half the time.");
-          printf_BT_slow(" The user should increase the profile setting by 1, repeating until the waves are always detected.");
-          printf_BT_slow(" User would enter \"3\" into terminal with no quotes.");
+          printf_BT_slow(" The user is interfacing with the ESP32 using a mobile phone Bluetooth serial terminal.");
+          printf_BT_slow(" The user notices that the text does not wrap around the phone screen properly, with five characters hanging at the end of each line.");
+          printf_BT_slow(" User would subtract 5 from the current text width and enter the result into the terminal.");
           printing_config = false;
           print_n();
           print_input();
 
           while (!good_setting)
           {
-            (void) get_uart_BT(buffer_S3_BT, 2, 0);
+            (void) get_uart_BT(buffer_S3_BT, 3, 0);
             print_n();
-            int new_max_profile = parse_int(buffer_S3_BT);
+            int new_text_width = parse_int(buffer_S3_BT);
 
-            if (new_max_profile >= 10 && new_max_profile <= 140) 
+            if (new_text_width >= 10 && new_text_width <= 140) 
             {
-              printf_BT_slow("Maximum profile set to %i", new_max_profile);
+              printf_BT_slow("Text width set to %03i characters", new_text_width);
               printf_BT_slow("Is this the desired value? Type Y for yes, any other character for no.");
               print_n();
               print_input();
@@ -970,7 +1039,7 @@ void loop()
               
               if (ack_char == 'y')
               {
-                current_config.text_width = new_max_profile;
+                current_config.text_width = new_text_width;
                 text_width = current_config.text_width;
                 good_setting = true;
                 printf_BT_slow("Value saved.");
@@ -980,14 +1049,14 @@ void loop()
               }
               else
               {
-                printf_BT_slow("Please enter an integer between 1 and 5, inclusive.");
+                printf_BT_slow("Please enter an integer between 010 and 140, inclusive, or enter 000 to disable text wrapping.");
                 print_n();
                 print_input();
               }
             }
             else
             {
-              printf_BT_slow("Invalid input. Please enter an integer between 1 and 5, inclusive.");
+              printf_BT_slow("Invalid input. Please enter an integer between 010 and 140, inclusive, or enter 000 to disable text wrapping.");
               print_n();
               print_input();
             }
@@ -1016,6 +1085,33 @@ void loop()
               break;
             }
             printf_BT_slow("Testing actual update rate...");
+            state = STATE_LISTENING;
+          }
+          break;
+
+        case 'b':
+          if (current_config.start_m >= current_config.end_m)
+          {
+            print_n();
+            printf_BT_slow("WARNING: Start of range is greater than end of range! This must be fixed before continuing.");
+            print_n();
+            printf_BT_slow("Please send one of the characters from the menu above.");
+            print_n();
+            print_input();
+          }
+          else
+          {
+            print_n();
+            if (!send_config_stm32(&current_config))
+            {
+              printf_debug("ERROR: Couldn't send config.");
+              print_n();
+              print_config_menu(&current_config);
+              break;
+            }
+            serial_plotter = true;
+            serial_plotter_init = millis();
+            printf_BT_slow("Print to Bluetooth in serial plotter mode...");
             state = STATE_LISTENING;
           }
           break;
@@ -1440,6 +1536,8 @@ void print_input(void)
   {
     append_file(SD, debug_file_path, "Input: ");
   }
+
+  Serial.print("Input: ");
 }
 
 
@@ -1768,6 +1866,26 @@ void printf_datalog(const char *format, ...)
 }
 
 
+void printf_serial_plotter(const char *format, ...)
+{
+  va_list args;
+  char buf[256]; // Adjust size as needed
+
+  va_start(args, format);
+  (void) vsnprintf(buf, sizeof(buf), format, args);
+  va_end(args);
+
+  if (BT_on)
+  {
+    SerialBT.print(buf);
+    SerialBT.println();
+  }
+
+  Serial.print(buf);
+  Serial.println();
+}
+
+
 void print_config_menu(ConfigSettings *config)
 {
   printf_BT_slow("--- CONFIGURATION MENU ---");
@@ -1790,8 +1908,13 @@ void print_config_menu(ConfigSettings *config)
   printf_BT_slow("   Current value: %i (0: generic, 1: planar)", config->reflector_shape);
   printf_BT_slow("T: Change the threshold sensitivity. Affects accuracy.");
   printf_BT_slow("   Current value: %04.2f", config->threshold_sensitivity);
+  printf_BT_slow("W: Set the text width for the Bluetooth UART output.");
+  printf_BT_slow("   Current value: %03i characters", current_config.text_width);
   printf_BT_slow("A: Measure the actual update rate.");
   printf_BT_slow("   True update rate: %04.1f Hz", config->true_update_rate);
+  printf_BT_slow("B: Print to Bluetooth in serial plotter mode for two minutes.");
+  printf_BT_slow("   Useful for tuning settings with visual indicators.");
+  printf_BT_slow("   Recommended to use Arduino IDE serial plotter.");
   printf_BT_slow("X: Exit the menu.");
   printing_config = false;
   print_n();
@@ -2145,23 +2268,6 @@ void flush_debug_buffer(void)
 }
 
 
-uint32_t millis_mod_1000(void) 
-{
-  static uint32_t last_millis = 0;
-  static uint32_t offset = 0;
-  uint32_t current_millis = millis();
-  
-  if (current_millis < last_millis) 
-  {
-    // millis() has wrapped around
-    offset = (offset + 1000 - (last_millis % 1000)) % 1000;
-  }
-  
-  last_millis = current_millis;
-  return (current_millis % 1000 + offset) % 1000;
-}
-
-
 void check_sizes(void)
 {
   if (sizeof(unsigned long) != 4)
@@ -2179,4 +2285,132 @@ void check_sizes(void)
     Serial.println("\nERROR: Size of unsigned long is not 4 bytes; rename float32_t.");
     while (true);
   }
+}
+
+
+DateTimeMS timekeeper(DateTimeMS initial_time, uint32_t initial_millis)
+{
+  uint32_t current_millis = millis();
+  uint64_t elapsed;
+  static uint32_t overflow_count = 0;
+  uint64_t overflow = (uint64_t) (0xFFFFFFFF * overflow_count);
+
+  if (current_millis >= initial_millis) {
+    elapsed = (uint64_t) (current_millis - initial_millis) + overflow;
+  } else {
+    // Overflow occurred
+    overflow_count++;
+    elapsed = (uint64_t) ((0xFFFFFFFF - initial_millis) + current_millis + 1UL) + overflow;
+  }
+
+  DateTimeMS current = initial_time;
+
+  // Add elapsed time to initial time
+  current.millisecond += elapsed % 1000;
+  elapsed /= 1000;
+  
+  if (current.millisecond >= 1000) 
+  {
+      current.millisecond -= 1000;
+      elapsed++;
+  }
+  
+  current.second += elapsed % 60;
+  elapsed /= 60;
+  
+  if (current.second >= 60) 
+  {
+      current.second -= 60;
+      elapsed++;
+  }
+  
+  current.minute += elapsed % 60;
+  elapsed /= 60;
+  
+  if (current.minute >= 60) 
+  {
+      current.minute -= 60;
+      elapsed++;
+  }
+  
+  current.hour += elapsed % 24;
+  elapsed /= 24;
+  
+  if (current.hour >= 24) 
+  {
+      current.hour -= 24;
+      elapsed++;
+  }
+  
+  // Add days, handling month and year transitions
+  while (elapsed > 0) 
+  {
+    uint8_t days_this_month = days_in_month(current.month, current.year);
+    if (current.day + elapsed > days_this_month) 
+    {
+      elapsed -= (days_this_month - current.day + 1);
+      current.day = 1;
+      if (++current.month > 12) 
+      {
+        current.month = 1;
+        current.year++;
+      }
+    }
+    else 
+    {
+      current.day += elapsed;
+      break;
+    }
+  }
+  
+  return current;
+}
+
+
+uint8_t days_in_month(uint8_t month, uint16_t year) 
+{
+  static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  if (month == 2 && is_leap_year(year)) 
+  {
+    return 29;
+  }
+  return days_in_month[month - 1];
+}
+
+
+bool is_leap_year(uint16_t year) 
+{
+  return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+
+
+void set_init_time(DateTimeMS *initial_time, uint32_t *initial_millis)
+{
+  DateTime i_now = rtc.now();
+  initial_time->year = i_now.year();
+  initial_time->month = i_now.month();
+  initial_time->day = i_now.day();
+  initial_time->hour = i_now.hour();
+  initial_time->minute = i_now.minute();
+  initial_time->second = i_now.second();
+  initial_time->millisecond = millis() % 1000;
+  *initial_millis = millis();
+
+  Serial.println("Initial time:");
+  Serial.print(initial_time->year, DEC);
+  Serial.print('/');
+  Serial.print(initial_time->month, DEC);
+  Serial.print('/');
+  Serial.print(initial_time->day, DEC);
+  Serial.print(" ");
+  Serial.print(initial_time->hour, DEC);
+  Serial.print(':');
+  Serial.print(initial_time->minute, DEC);
+  Serial.print(':');
+  Serial.print(initial_time->second, DEC);
+  Serial.print('.');
+  Serial.print(initial_time->millisecond, DEC);
+  Serial.println();
+  Serial.println("Initial millis:");
+  Serial.printf("%u\n", *initial_millis);
 }
