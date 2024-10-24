@@ -171,3 +171,26 @@ My next steps, when I return, are:
 	- Modify configuration for low power mode (https://content.u-blox.com/sites/default/files/products/documents/u-blox6_ReceiverDescrProtSpec_%28GPS.G6-SW-10018%29_Public.pdf)
 - Add ESP32 low-power mode
 
+
+10-23-24 ----------------------------------------------------------------------------------------------------------------
+
+Long break over! Designed a mount for the radar unit so I can hold it over the edge of a pier without it falling off. 
+Also did some testing in my bathtub, raising and lowering the water level, and making waves to measure. Tested out a
+variety of settings for the config to see how they affect the accuracy. Finally, updated the ESP32 code to print the
+config to the datalogs and fixed a few small bugs. Oh, and also make some new Python scripts for visualizing the data
+straight from the SD card.
+
+Tomorrow's goals:
+- Figure out how to get the mount printed
+- Do tests to figure out the cone angle for the different lens distances
+- Get the GPS working, add to log data
+- Prep for travel:
+ - radar unit and battery
+ - solar panel and adapter
+ - color sensor
+ - wooden sticks
+ - zip ties
+ - scissors or cutters
+ - logbook and pen
+ - puter, mouse, and charger
+ - screwdriver set

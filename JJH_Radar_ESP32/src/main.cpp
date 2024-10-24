@@ -251,6 +251,21 @@ void loop()
           printf_stm32("DATA_START");
           (void) start_new_data_file(&data_file_path);
 
+          // Save configuration to data file 
+          printf_datalog("GPS coordinates: COMING_SOON");
+          printf_datalog("Start of range: %.2f m", current_config.start_m);
+          printf_datalog("End of range: %.2f m", current_config.end_m);
+          printf_datalog("Update rate: %.1f Hz", current_config.update_rate);
+          printf_datalog("Maximum step length: %d (%.1f mm)", current_config.max_step_length, 
+                        (float)current_config.max_step_length * 2.5f);
+          printf_datalog("Maximum profile: %d", current_config.max_profile);
+          printf_datalog("Signal quality: %.1f", current_config.signal_quality);
+          printf_datalog("Reflector shape: %d (0: generic, 1: planar)", current_config.reflector_shape);
+          printf_datalog("Threshold sensitivity: %.2f", current_config.threshold_sensitivity);
+          printf_datalog("True update rate: %.1f Hz", current_config.true_update_rate);
+          printf_datalog("Text width: %d characters", current_config.text_width);
+          printf_datalog("---"); // Add a separator line
+
         // M115: Precedes new distance data
         case 115:
           gibberish_blocker = false;
@@ -631,7 +646,7 @@ void loop()
           printing_config = true;
           printf_BT_slow("Format: XX.X");
           printf_BT_slow(" Input must match format exactly. Enter leading and trailing zeros as appropriate.");
-          printf_BT_slow(" Value must be between 00.1 and 60.0, inclusive.");
+          printf_BT_slow(" Value must be between 00.1 and 10.5, inclusive.");
           printf_BT_slow(" Units are in Hertz.");
           printf_BT_slow("Notes:");
           printf_BT_slow(" Keep as low as is required. Greatly affects power consumption.");
@@ -649,14 +664,11 @@ void loop()
             print_n();
             float32_t new_update_rate = parse_float(buffer_S3_BT);
 
-            if (!isnan(new_update_rate) && (new_update_rate >= 0.1f) && (new_update_rate <= 60.0f)) 
+            if (!isnan(new_update_rate) && (new_update_rate >= 0.1f) && (new_update_rate <= 10.5f)) 
             {
-              if (new_update_rate >= 20.0f) 
-              {
-                printf_BT_slow("WARNING: Actual update rate may be lower than desired.");
-                printf_BT_slow("Test true update rate in configuration menu.");
-                print_n();
-              }
+              printf_BT_slow("WARNING: Actual update rate may be lower than desired.");
+              printf_BT_slow("Test true update rate in configuration menu.");
+              print_n();
 
               printf_BT_slow("Update rate set to %04.1f Hz", new_update_rate);
               printf_BT_slow("Is this the desired value? Type Y for yes, any other character for no.");
@@ -678,14 +690,14 @@ void loop()
               }
               else
               {
-                printf_BT_slow("Please enter a new number between 00.1 and 60.0, inclusive.");
+                printf_BT_slow("Please enter a new number between 00.1 and 10.5, inclusive.");
                 print_n();
                 print_input();
               }
             }
             else
             {
-              printf_BT_slow("Invalid input. Please enter a number between 00.1 and 60.0, inclusive.");
+              printf_BT_slow("Invalid input. Please enter a number between 00.1 and 10.5, inclusive.");
               print_n();
               print_input();
             }
@@ -1147,6 +1159,7 @@ void loop()
               print_config_menu(&current_config);
               break;
             }
+
             state = STATE_LISTENING;
           }
           break;
