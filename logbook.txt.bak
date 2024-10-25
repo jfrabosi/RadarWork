@@ -194,3 +194,12 @@ Tomorrow's goals:
  - logbook and pen
  - puter, mouse, and charger
  - screwdriver set
+
+
+10-24-24 ----------------------------------------------------------------------------------------------------------------
+
+Did some angle testing, confirmed that the LH132 + XE125, Hyperbolic lens, D2 plot is accurate for this system. Can be
+found in Getting-Started-Guide-A121-Lenses.pdf. The lens has a roughly 20 degree (circular) viewing angle at maximum 
+(where the radar returns any measurements for metal/water), and 10 degree circle for the majority of measurements.
+
+Got the GPS working. It now saves the lat/long to the config (and prints it for each data file), and 

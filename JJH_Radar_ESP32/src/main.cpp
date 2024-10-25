@@ -26,8 +26,12 @@
 #define TX_PIN 17
 #define DEBUG_BUFFER_SIZE 4096
 #define BT_TIMEOUT_MINS 10U
+#define GPS_DELAY_MINS 60U
+#define MAX_LINES_PER_DATA_FILE 1000000UL
 #define DEVICE_NAME "ESP32_HUZZAH32"
 #define PRINT_DEBUG_TO_BT false
+#define GPS_RX 32
+#define GPS_TX 14
 
 
 // --- CUSTOM TYPEDEFS AND STRUCTS ---
@@ -53,6 +57,8 @@ typedef struct
   uint8_t testing_update_rate;
   float32_t true_update_rate;
   uint8_t text_width;
+  char latitude[32];
+  char longitude[32];
 } ConfigSettings;
 
 typedef struct
@@ -66,6 +72,14 @@ typedef struct
   uint16_t millisecond;
 } DateTimeMS;
 
+struct GPSData {
+  int hour;
+  int minute;
+  int second;
+  char latitude[32];
+  char longitude[32];
+};
+
 
 // --- GLOBAL VARIABLES ---
 
@@ -73,6 +87,7 @@ typedef struct
 String deviceName = DEVICE_NAME;
 BluetoothSerial SerialBT;
 HardwareSerial Serial32(2);
+HardwareSerial gpsSerial(1);
 
 // printing stuff
 bool BT_on = true;
@@ -95,16 +110,20 @@ char debug_buffer[DEBUG_BUFFER_SIZE];
 size_t debug_buffer_pos = 0;
 uint32_t last_flush_time = 0;
 const uint32_t FLUSH_INTERVAL = 5000U; // Flush every 5 seconds
+uint32_t lines_saved = 0;
 
 // state-tracking
 uint8_t state = STATE_LOAD_CONFIG_SD;
 bool sending_config = false;
 
-// time-keeping
+// time-keeping and GPS
 uint32_t start_time_BT = millis();
 DateTimeMS init_time;
 uint32_t init_millis;
 uint32_t init_814;
+bool gps_enable = true;
+uint32_t start_time_GPS = millis();
+GPSData gps_data;
 
 // --- FUNCTION PROTOTYPES --- 
 bool get_uart_BT(char *result, uint16_t buf_size, uint32_t timeout);
@@ -144,6 +163,15 @@ uint8_t days_in_month(uint8_t month, uint16_t year);
 bool is_leap_year(uint16_t year);
 void set_init_time(DateTimeMS *initial_time, uint32_t *initial_millis);
 void printf_serial_plotter(const char *format, ...);
+void convertDMtoDMS(float dm, char *result, size_t size, bool isLat);
+bool parseGPGGA(const char* sentence, GPSData* data);
+void processGPSData(GPSData &gps_data);
+void gpsSetPowerOff(void); 
+void gpsSetPowerOn(void); 
+int8_t getUTCOffset(void);
+bool isDST(uint16_t year, uint8_t month, uint8_t day, uint8_t hour);
+void syncRTCWithGPS(GPSData* gps_data);
+
 
 // --- STATE 0: INIT_ESP ---
 void setup()
@@ -164,6 +192,10 @@ void setup()
 
   // set up RTC
   setup_rtc();
+  
+  // set up GPS
+  gpsSerial.begin(9600UL, SERIAL_8N1, GPS_RX, GPS_TX);
+  gpsSetPowerOn();
 
   // set initial time for datalogging
   set_init_time(&init_time, &init_millis);
@@ -206,6 +238,15 @@ void loop()
     if (read_config_adalogger(&current_config))
     {
       printf_BT_slow("Configuration loaded from SD card.");
+      if (strcmp(current_config.latitude, "Not Set") != 0 && strcmp(current_config.longitude, "Not Set") != 0) {
+        strncpy(gps_data.latitude, current_config.latitude, sizeof(gps_data.latitude) - 1);
+        strncpy(gps_data.longitude, current_config.longitude, sizeof(gps_data.longitude) - 1);
+        gps_data.latitude[sizeof(gps_data.latitude) - 1] = '\0';
+        gps_data.longitude[sizeof(gps_data.longitude) - 1] = '\0';
+        printf_debug("Loaded previous GPS coordinates: %s %s", gps_data.latitude, gps_data.longitude);
+      } else {
+        printf_debug("No previous GPS coordinates found in config");
+      }
     }
     else
     {
@@ -252,7 +293,7 @@ void loop()
           (void) start_new_data_file(&data_file_path);
 
           // Save configuration to data file 
-          printf_datalog("GPS coordinates: COMING_SOON");
+          printf_datalog("Location: %s %s", gps_data.latitude, gps_data.longitude);
           printf_datalog("Start of range: %.2f m", current_config.start_m);
           printf_datalog("End of range: %.2f m", current_config.end_m);
           printf_datalog("Update rate: %.1f Hz", current_config.update_rate);
@@ -306,6 +347,27 @@ void loop()
                                     d_now.year % 100, d_now.month, d_now.day, 
                                     d_now.hour, d_now.minute, d_now.second, d_now.millisecond,
                                     data_start);
+              }
+              lines_saved++;
+              if (lines_saved >= MAX_LINES_PER_DATA_FILE)
+              {
+                (void) start_new_data_file(&data_file_path);
+
+                // Save configuration to data file 
+                printf_datalog("Location: %s %s", gps_data.latitude, gps_data.longitude);
+                printf_datalog("Start of range: %.2f m", current_config.start_m);
+                printf_datalog("End of range: %.2f m", current_config.end_m);
+                printf_datalog("Update rate: %.1f Hz", current_config.update_rate);
+                printf_datalog("Maximum step length: %d (%.1f mm)", current_config.max_step_length, 
+                              (float)current_config.max_step_length * 2.5f);
+                printf_datalog("Maximum profile: %d", current_config.max_profile);
+                printf_datalog("Signal quality: %.1f", current_config.signal_quality);
+                printf_datalog("Reflector shape: %d (0: generic, 1: planar)", current_config.reflector_shape);
+                printf_datalog("Threshold sensitivity: %.2f", current_config.threshold_sensitivity);
+                printf_datalog("True update rate: %.1f Hz", current_config.true_update_rate);
+                printf_datalog("Text width: %d characters", current_config.text_width);
+                printf_datalog("---"); // Add a separator line
+                lines_saved = 0;
               }
             }
           }
@@ -435,6 +497,18 @@ void loop()
         print_CP();
         print_config_menu(&current_config);
       }
+    }
+
+    if ((millis() - start_time_GPS) > ((uint32_t) GPS_DELAY_MINS * 60000UL))
+    {
+      gps_enable = true;
+      start_time_GPS = millis();
+      gpsSetPowerOn();
+    }
+
+    if (gps_enable)
+    {
+      processGPSData(gps_data);
     }
 
     // check for serial plotter timeout
@@ -1350,38 +1424,40 @@ bool read_config_adalogger(ConfigSettings *config)
     // File doesn't exist, create it with default values
     file.close();
     ConfigSettings default_config = {
-      .start_m = 0.10f,
-      .end_m = 0.50f,
-      .update_rate = 0.8f,
-      .max_step_length = 1,
-      .max_profile = 5,
-      .signal_quality = 20.0f,
-      .reflector_shape = 1,
-      .threshold_sensitivity = 0.50f,
-      .testing_update_rate = 0,
-      .true_update_rate = 10.1f,
-      .text_width = 40
+      0.10f,          // start_m
+      0.50f,          // end_m
+      0.8f,           // update_rate
+      1,              // max_step_length
+      5,              // max_profile
+      20.0f,          // signal_quality
+      1,              // reflector_shape
+      0.50f,          // threshold_sensitivity
+      0,              // testing_update_rate
+      10.1f,          // true_update_rate
+      40,             // text_width
+      "Not Set",      // latitude
+      "Not Set"       // longitude
     };
     *config = default_config;
     return save_config_adalogger(config);
   }
 
   // File exists, read and parse it
-  char buf[64];
+  char buf[128];  // Increased buffer size to accommodate GPS coordinates
   printf_debug("Loaded config file.");
   size_t len = file.readBytesUntil('\n', buf, sizeof(buf) - 1);
   file.close();
   
   if (len == 0) {
     printf_debug("Error: Empty config file");
-    // Delete the empty file
     delete_file(SD, "/radar_config.txt");
     return false;
   }
   
   buf[len] = '\0';
 
-  int parsed = sscanf(buf, "%f,%f,%f,%hhu,%hhu,%f,%hhu,%f,%hhu,%f,%hhu",
+  char lat_buf[32], lon_buf[32];
+  int parsed = sscanf(buf, "%f,%f,%f,%hhu,%hhu,%f,%hhu,%f,%hhu,%f,%hhu,%[^,],%s",
                       &config->start_m,
                       &config->end_m,
                       &config->update_rate,
@@ -1392,13 +1468,20 @@ bool read_config_adalogger(ConfigSettings *config)
                       &config->threshold_sensitivity,
                       &config->testing_update_rate,
                       &config->true_update_rate,
-                      &config->text_width);
+                      &config->text_width,
+                      lat_buf,
+                      lon_buf);
 
-  if (parsed != 11) {
+  if (parsed != 13) {
     printf_debug("Error: Failed to parse config file");
     delete_file(SD, "/radar_config.txt");
     return false;
   }
+
+  strncpy(config->latitude, lat_buf, sizeof(config->latitude) - 1);
+  strncpy(config->longitude, lon_buf, sizeof(config->longitude) - 1);
+  config->latitude[sizeof(config->latitude) - 1] = '\0';
+  config->longitude[sizeof(config->longitude) - 1] = '\0';
 
   text_width = config->text_width;
   return true;
@@ -1413,9 +1496,9 @@ bool save_config_adalogger(ConfigSettings *config)
   }
 
   // Prepare the configuration string
-  char config_string[64];
+  char config_string[128];  // Increased buffer size
   snprintf(config_string, sizeof(config_string), 
-           "%05.2f,%05.2f,%04.1f,%02d,%d,%04.1f,%d,%04.2f,%d,%04.1f,%d\n",
+           "%05.2f,%05.2f,%04.1f,%02d,%d,%04.1f,%d,%04.2f,%d,%04.1f,%d,%s,%s\n",
            config->start_m,
            config->end_m,
            config->update_rate,
@@ -1426,9 +1509,11 @@ bool save_config_adalogger(ConfigSettings *config)
            config->threshold_sensitivity,
            config->testing_update_rate,
            config->true_update_rate,
-           config->text_width);
+           config->text_width,
+           config->latitude,
+           config->longitude);
 
-  // Append the new configuration to the file (which will create it if it doesn't exist)
+  // Append the new configuration to the file
   append_file(SD, "/radar_config.txt", config_string);
 
   // Verify that the file was written correctly
@@ -1438,7 +1523,7 @@ bool save_config_adalogger(ConfigSettings *config)
     return false;
   }
 
-  char verify_buf[64];
+  char verify_buf[128];  // Increased buffer size
   size_t bytesRead = file.readBytesUntil('\n', verify_buf, sizeof(verify_buf) - 1);
   file.close();
 
@@ -1447,6 +1532,7 @@ bool save_config_adalogger(ConfigSettings *config)
     return false;
   }
 
+  printf_debug("New config file saved");
   text_width = config->text_width;
   return true;
 }
@@ -2426,4 +2512,312 @@ void set_init_time(DateTimeMS *initial_time, uint32_t *initial_millis)
   Serial.println();
   Serial.println("Initial millis:");
   Serial.printf("%u\n", *initial_millis);
+}
+
+
+void convertDMtoDMS(float dm, char *result, size_t size, bool isLat)
+{
+  float degrees = (int)(dm / 100);
+  float minutes = (int)(fmod(dm, 100.0));
+  float seconds = (dm - degrees * 100 - minutes) * 60;
+  
+  char direction = ' ';
+  if (isLat) {
+    direction = (degrees >= 0) ? 'N' : 'S';
+  } else {
+    direction = (degrees >= 0) ? 'E' : 'W';
+  }
+  degrees = fabs(degrees);
+  
+  snprintf(result, size, "%d°%02d'%05.1f\"%c", 
+           (int)degrees, (int)minutes, seconds, direction);
+}
+
+
+bool parseGPGGA(const char* sentence, GPSData* data) {
+  static uint8_t validCount = 0;
+  
+  if (strncmp(sentence, "$GPGGA", 6) != 0) {
+    return false;
+  }
+
+  // Find start of time field (after first comma)
+  const char* ptr = strchr(sentence, ',');
+  if (!ptr) return false;
+  ptr++;
+
+  // Parse time (format: HHMMSS.SS)
+  int time = atoi(ptr);
+  int hour = time / 10000;
+  int minute = (time / 100) % 100;
+  int second = time % 100;
+
+  // Skip to latitude field
+  ptr = strchr(ptr, ',');
+  if (!ptr) return false;
+  ptr++;
+  
+  // Parse latitude
+  float lat = atof(ptr);
+  if (lat == 0.0f) return false; // Invalid latitude
+  
+  // Skip to N/S indicator
+  ptr = strchr(ptr, ',');
+  if (!ptr) return false;
+  ptr++;
+  if (*ptr == 'S') lat = -lat;
+  if (*ptr != 'N' && *ptr != 'S') return false; // Invalid N/S indicator
+
+  // Skip to longitude field
+  ptr = strchr(ptr, ',');
+  if (!ptr) return false;
+  ptr++;
+  
+  // Parse longitude
+  float lon = atof(ptr);
+  if (lon == 0.0f) return false; // Invalid longitude
+  
+  // Skip to E/W indicator
+  ptr = strchr(ptr, ',');
+  if (!ptr) return false;
+  ptr++;
+  if (*ptr == 'W') lon = -lon;
+  if (*ptr != 'E' && *ptr != 'W') return false; // Invalid E/W indicator
+
+  // Skip to fix quality
+  ptr = strchr(ptr, ',');
+  if (!ptr) return false;
+  ptr++;
+  int fixQuality = atoi(ptr);
+  if (fixQuality == 0) return false; // No fix
+
+  // Skip to number of satellites
+  ptr = strchr(ptr, ',');
+  if (!ptr) return false;
+  ptr++;
+  int satellites = atoi(ptr);
+  if (satellites < 4) return false; // Not enough satellites for reliable position
+
+  // Skip to HDOP
+  ptr = strchr(ptr, ',');
+  if (!ptr) return false;
+  ptr++;
+  float hdop = atof(ptr);
+  if (hdop > 5.0) return false; // Poor accuracy
+
+  // Increment valid count if we got this far
+  validCount++;
+  
+  // Only proceed if we've had enough valid readings
+  if (validCount <= 10) return false;
+
+  // If we get here, we have a valid reading. Save the data.
+  int8_t tzOffset = getUTCOffset();
+  data->hour = hour + tzOffset;  // Apply correct timezone offset
+  if (data->hour < 0) {
+      data->hour += 24;
+  }
+  data->minute = minute;
+  data->second = second;
+
+  // Convert to DMS format
+  convertDMtoDMS(fabs(lat), data->latitude, sizeof(data->latitude), true);
+  convertDMtoDMS(fabs(lon), data->longitude, sizeof(data->longitude), false);
+
+  return true;
+}
+
+
+void processGPSData(GPSData &gps_data) {
+  static char buffer[256];
+  static uint8_t idx = 0;
+  
+  while (gpsSerial.available() > 0) {
+    char c = gpsSerial.read();
+    
+    // Start of new NMEA sentence
+    if (c == '$') {
+      idx = 0;
+      buffer[idx++] = c;
+    }
+    // Continue buffering
+    else if (idx < sizeof(buffer)-1) {
+      buffer[idx++] = c;
+      
+      // Complete sentence received (CR or LF)
+      if (c == '\r' || c == '\n') {
+        buffer[idx-1] = '\0'; // Replace CR/LF with null terminator
+        
+        // Only process if we have a complete sentence starting with $
+        if (buffer[0] == '$' && idx > 7) {
+          // For debugging
+          // printf_debug_stm32("GPS: %s", buffer);
+          
+          if (parseGPGGA(buffer, &gps_data)) {
+            printf_BT_slow("Time: %02d:%02d:%02d PST", 
+                          gps_data.hour, gps_data.minute, gps_data.second);
+            printf_BT_slow("Location: %s %s", 
+                          gps_data.latitude, gps_data.longitude);
+                          
+            // Update config with new GPS coordinates
+            strncpy(current_config.latitude, gps_data.latitude, sizeof(current_config.latitude) - 1);
+            strncpy(current_config.longitude, gps_data.longitude, sizeof(current_config.longitude) - 1);
+            current_config.latitude[sizeof(current_config.latitude) - 1] = '\0';
+            current_config.longitude[sizeof(current_config.longitude) - 1] = '\0';
+            
+            // Save the updated config to SD card
+            save_config_adalogger(&current_config);
+            
+            gps_enable = false;
+            gpsSetPowerOff();
+            syncRTCWithGPS(&gps_data);
+          }
+        }
+        idx = 0; // Reset for next sentence
+      }
+    }
+    // Buffer overflow protection
+    else {
+      idx = 0;
+    }
+  }
+}
+
+
+void gpsSetPowerOff(void) 
+{
+  // UBX-CFG-RXM command to set power save mode
+  uint8_t powerOffCmd[] = {
+    0xB5, 0x62,           // UBX sync chars
+    0x06, 0x11,           // CFG-RXM message class/ID
+    0x02, 0x00,           // Length (2 bytes)
+    0x08, 0x01,           // reserved1=8 (power save mode), reserved2=1
+    0x22, 0x92            // Checksum
+  };
+  
+  // Send command to GPS module
+  for (int i = 0; i < sizeof(powerOffCmd); i++) {
+    gpsSerial.write(powerOffCmd[i]);
+  }
+  delay(100); // Give GPS time to process command
+}
+
+
+void gpsSetPowerOn(void) 
+{
+  // UBX-CFG-RXM command to set continuous mode
+  uint8_t powerOnCmd[] = {
+    0xB5, 0x62,           // UBX sync chars  
+    0x06, 0x11,           // CFG-RXM message class/ID
+    0x02, 0x00,           // Length (2 bytes)
+    0x00, 0x01,           // reserved1=0 (continuous mode), reserved2=1
+    0x1A, 0x82            // Checksum
+  };
+  
+  // Send command to GPS module
+  for (int i = 0; i < sizeof(powerOnCmd); i++) {
+    gpsSerial.write(powerOnCmd[i]);
+  }
+  delay(100); // Give GPS time to process command
+  
+  // Wait for GPS to start transmitting again
+  uint32_t startTime = millis();
+  while (!gpsSerial.available() && (millis() - startTime < 2000)) {
+    delay(10);
+  }
+}
+
+
+bool isDST(uint16_t year, uint8_t month, uint8_t day, uint8_t hour) {
+    // DST starts on second Sunday in March at 2am
+    // DST ends on first Sunday in November at 2am
+    
+    if (month < 3 || month > 11) {
+        return false;  // Jan, Feb, Dec are always PST
+    }
+    
+    if (month > 3 && month < 11) {
+        return true;   // Apr to Oct are always PDT
+    }
+
+    // Calculate the target Sunday for start/end
+    int targetSunday;
+    if (month == 3) {
+        // Second Sunday in March
+        targetSunday = 14 - ((year + year/4 + 2) % 7);
+        // If day is before target Sunday, or it's the day but before 2am
+        if (day < targetSunday || (day == targetSunday && hour < 2)) {
+            return false;
+        }
+        return true;
+    } else {  // month == 11
+        // First Sunday in November
+        targetSunday = 7 - ((year + year/4 + 2) % 7);
+        // If day is after target Sunday, or it's the day and after 2am
+        if (day > targetSunday || (day == targetSunday && hour >= 2)) {
+            return false;
+        }
+        return true;
+    }
+}
+
+
+int8_t getUTCOffset(void) {
+    DateTime now = rtc.now();
+    bool inDST = isDST(now.year(), now.month(), now.day(), now.hour());
+    return inDST ? -7 : -8;
+}
+
+
+void syncRTCWithGPS(GPSData* gps_data) {
+    DateTime now = rtc.now();
+    
+    // Convert current RTC and GPS times to total seconds for comparison
+    int32_t rtc_seconds = ((int32_t)now.hour() * 60 + now.minute()) * 60 + now.second();
+    int32_t gps_seconds = ((int32_t)gps_data->hour * 60 + gps_data->minute) * 60 + gps_data->second;
+    
+    // Calculate the difference (can be negative)
+    int32_t second_diff = gps_seconds - rtc_seconds;
+    
+    // Handle day boundary cases
+    // If difference is more than 12 hours, we're likely crossing midnight
+    if (second_diff > 12 * 3600) {
+        // GPS time is ahead, but we're actually crossing backwards
+        // e.g., RTC: 00:01:00, GPS: 23:10:00 (previous day)
+        second_diff -= 24 * 3600;
+    } else if (second_diff < -12 * 3600) {
+        // GPS time is behind, but we're actually crossing forwards
+        // e.g., RTC: 23:55:00, GPS: 00:05:00 (next day)
+        second_diff += 24 * 3600;
+    }
+    
+    // Update if there's any difference
+    if (second_diff != 0) {
+        DateTime adjustment = now;
+        
+        // Calculate the new date/time
+        if (second_diff >= 0) {
+            // Moving forward in time
+            adjustment = now + TimeSpan(0, 0, 0, second_diff);
+        } else {
+            // Moving backward in time
+            adjustment = now - TimeSpan(0, 0, 0, -second_diff);
+        }
+        
+        // Update the RTC
+        rtc.adjust(DateTime(adjustment.year(),
+                          adjustment.month(),
+                          adjustment.day(),
+                          gps_data->hour,
+                          gps_data->minute,
+                          gps_data->second));
+        
+        printf_debug("RTC synchronized with GPS time:");
+        printf_debug("Old RTC time: %02d/%02d/%02d %02d:%02d:%02d",
+                    now.year() % 100, now.month(), now.day(),
+                    now.hour(), now.minute(), now.second());
+        printf_debug("New RTC time: %02d/%02d/%02d %02d:%02d:%02d",
+                    adjustment.year() % 100, adjustment.month(), adjustment.day(),
+                    gps_data->hour, gps_data->minute, gps_data->second);
+    }
 }

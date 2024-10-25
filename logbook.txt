@@ -197,3 +197,17 @@ Tomorrow's goals:
 
 
 10-24-24 ----------------------------------------------------------------------------------------------------------------
+
+Did some angle testing, confirmed that the LH132 + XE125, Hyperbolic lens, D2 plot is accurate for this system. Can be
+found in Getting-Started-Guide-A121-Lenses.pdf. The lens has a roughly 20 degree (circular) viewing angle at maximum 
+(where the radar returns any measurements for metal/water), and 10 degree circle for the majority of measurements.
+
+Got the GPS working. It now saves the lat/long to the config (and prints it for each data file), and updates the time
+(only noticable for new data logs, to avoid breaking time consistency). I also put a limit on the number of lines a .txt
+file could be (1 million, about 40MB or roughly 11.5 days at 1Hz) for practical purposes. 
+
+Potential features for future:
+- Low power mode for ESP!
+- Wait until GPS fix to start data collection?
+- If power cycling occurs after sunset (say 5pm), wait until morning to try powering again? maybe track last power-loss?
+- Make sure debug log isn't as long as data log
