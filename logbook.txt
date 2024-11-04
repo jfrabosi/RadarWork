@@ -184,16 +184,7 @@ Tomorrow's goals:
 - Figure out how to get the mount printed
 - Do tests to figure out the cone angle for the different lens distances
 - Get the GPS working, add to log data
-- Prep for travel:
- - radar unit and battery
- - solar panel and adapter
- - color sensor
- - wooden sticks
- - zip ties
- - scissors or cutters
- - logbook and pen
- - puter, mouse, and charger
- - screwdriver set
+- Prep for travel
 
 
 10-24-24 ----------------------------------------------------------------------------------------------------------------
@@ -211,3 +202,36 @@ Potential features for future:
 - Wait until GPS fix to start data collection?
 - If power cycling occurs after sunset (say 5pm), wait until morning to try powering again? maybe track last power-loss?
 - Make sure debug log isn't as long as data log
+
+Current power draw:
+- With BT: 140mA avg
+- Without BT: 125mA avg?
+
+
+10-30-24 ----------------------------------------------------------------------------------------------------------------
+
+Findings from MBYC testing:
+- Too high of a profile makes a lot of noise, profile=1 seems to be best for this environment
+- Step length doesn't appear to have a large impact on results between 5mm-15mm
+  - Need to do more Fo-SHIP tests to reliably test step length (and need another radar unit!)
+- Tide change is noticable (but looks weird because settings changed between runs)
+
+Next steps:
+- Fix GPS issue (W/E discrepancy)
+- Figure out why timestamps (data) weren't matching timestamps (filename)
+- Add more info to debug logs (denote start of data collection, timestamp)
+- Add more info to data log header (if restart due to power loss or config menu setting)
+- Look at current sonar implementation, see how they do low-power and GPS elevation
+- Account for GPS elevation, add to data log header and add config option to auto-account for elevation in data
+- Email testing findings to Talke, Lee, and Ridgely
+...
+- Design 3D-printed insert for waterproof box, get printed at Marin Library Lab
+- Assemble and test waterproofed unit on Fo-SHIP
+...
+- Rework the code to use multitasking, multiple code files
+- Improve the communication protocol between STM and ESP?
+- Improve the SD card writing (use interrupts?)
+- Implement low-power mode on the ESP32
+- Characterize power draw from components (ESP32, STM32/radar, GPS), account for update rate
+...
+- Implement auto-ranging mode?

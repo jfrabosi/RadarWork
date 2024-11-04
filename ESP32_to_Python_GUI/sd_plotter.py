@@ -6,7 +6,7 @@ import numpy as np
 from scipy import signal
 
 
-def parse_wave_data(file_path, start_time_set):
+def parse_wave_data(file_path, start_time_set, end_time_set):
     """
     Parse wave height data from a text file, filtering out corrupted rows.
     Returns timestamps (in seconds from start) and wave heights.
@@ -38,7 +38,7 @@ def parse_wave_data(file_path, start_time_set):
                     # Calculate seconds from start
                     seconds = (timestamp - start_time).total_seconds()
 
-                    if seconds >= start_time_set:
+                    if end_time_set >= seconds >= start_time_set:
                         times.append(seconds)
                         heights.append(height)
 
@@ -155,7 +155,7 @@ def plot_wave_data(times, heights, heights_filtered, title, subtitle, lpf_cutoff
     return plt
 
 
-def process_wave_data(file_path, title, subtitle, lpf_cutoff_hz, lpf_enable, ruler_enable, start_time):
+def process_wave_data(file_path, title, subtitle, lpf_cutoff_hz, lpf_enable, ruler_enable, start_time, end_time):
     """
     Main function to process and plot wave data from a file.
     """
@@ -163,7 +163,7 @@ def process_wave_data(file_path, title, subtitle, lpf_cutoff_hz, lpf_enable, rul
     file_name = os.path.basename(file_path)
 
     # Parse the data
-    times, heights = parse_wave_data(file_path, start_time)
+    times, heights = parse_wave_data(file_path, start_time, end_time)
 
     if len(times) == 0 or len(heights) == 0:
         print("No valid data was found in the file.")
@@ -189,11 +189,12 @@ def process_wave_data(file_path, title, subtitle, lpf_cutoff_hz, lpf_enable, rul
 
 # Example usage
 if __name__ == "__main__":
-    file_path = "H:/DATA/24-10-23_19-41-31_data.txt"  # Replace with your file path
-    title = "Splashes with Amplitude 0.2in, 0.1in, 0.1in, 0.5in, and 1.0in"
-    subtitle = "Profile = 3, Step Length = 5mm, Update Rate = 1.0Hz"
-    lpf_enable = False
-    lpf_cutoff_hz = 1.5
+    file_path = "H:/DATA/mbyc/p1l4_10hz.txt"  # Replace with your file path
+    title = "MBYC Testing, Bucket-Forced Waves, 10 seconds"
+    subtitle = "Profile = 1, Step Length = 10mm, Update Rate = 10.0Hz"
+    lpf_enable = True
+    lpf_cutoff_hz = 3.0
     ruler_enable = False
-    start_time = 0
-    process_wave_data(file_path, title, subtitle, lpf_cutoff_hz, lpf_enable, ruler_enable, start_time)
+    start_time = 26
+    end_time = start_time + 10
+    process_wave_data(file_path, title, subtitle, lpf_cutoff_hz, lpf_enable, ruler_enable, start_time, end_time)

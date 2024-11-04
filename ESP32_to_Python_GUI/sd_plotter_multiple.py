@@ -61,7 +61,7 @@ def plot_multi_wave_data(data_files, main_title, duration):
         axs = [axs]
 
     for i, data in enumerate(data_files):
-        file_path = os.path.join("H:/DATA", data['file_name'])
+        file_path = os.path.join("H:/DATA/mbyc", data['file_name'])
         times, heights = parse_wave_data(file_path, data['start_time'], data['start_time'] + duration)
 
         if len(times) == 0 or len(heights) == 0:
@@ -76,6 +76,7 @@ def plot_multi_wave_data(data_files, main_title, duration):
         axs[i].set_title(data['subtitle'])
         axs[i].margins(x=0.02)
         axs[i].tick_params(axis='both', which='major', labelsize=10)
+        axs[i].set_ylim([3.98, 4.12])
         axs[i].invert_yaxis()
 
         # Print statistics for each dataset
@@ -98,19 +99,19 @@ if __name__ == "__main__":
     # Define the data files and their parameters
     data_files = [
         {
-            "file_name": "24-10-23_19-41-31_data.txt",
-            "subtitle": "Profile = 3, Step Length = 5mm, Update Rate = 1.0Hz",
-            "start_time": 0
+            "file_name": "p1l4.txt",
+            "subtitle": "Profile = 1, Step Length = 5mm, Update Rate = 5.0Hz",
+            "start_time": 24
         },
         {
-            "file_name": "24-10-23_19-48-54_data.txt",
-            "subtitle": "Profile = 4, Step Length = 5mm, Update Rate = 1.0Hz",
-            "start_time": 0
+            "file_name": "p1l4_10hz.txt",
+            "subtitle": "Profile = 1, Step Length = 5mm, Update Rate = 10.0Hz",
+            "start_time": 26
         }
         # Add more files as needed
     ]
 
-    main_title = "Wave Height Analysis for Multiple Datasets"
-    duration = 100
+    main_title = ""
+    duration = 10
     plt = plot_multi_wave_data(data_files, main_title, duration)
     plt.show()

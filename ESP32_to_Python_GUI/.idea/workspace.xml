@@ -5,17 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="23069bbf-cad5-41cb-9e0f-67f91cf2f356" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/foship_plotter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sd_plotter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sd_plotter_multiple.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotter.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../JJH_Radar_ESP32/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../JJH_Radar_ESP32/src/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sd_plotter.py" beforeDir="false" afterPath="$PROJECT_DIR$/sd_plotter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sd_plotter_multiple.py" beforeDir="false" afterPath="$PROJECT_DIR$/sd_plotter_multiple.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../logbook.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../logbook.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../logbook.txt.bak" beforeDir="false" afterPath="$PROJECT_DIR$/../logbook.txt.bak" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../misra_c_notes.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../misra_c_notes.txt.bak" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../xm125/.settings/language.settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../xm125/.settings/language.settings.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,20 +34,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.ascii.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.plotter.executor": "Run",
-    "Python.sd_plotter.executor": "Run",
-    "Python.sd_plotter_multiple.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/frabb/Documents/RadarWork/ESP32_to_Python_GUI",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.ascii.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.plotter.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sd_plotter.executor&quot;: &quot;Run&quot;,
+    &quot;Python.sd_plotter_multiple.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/frabb/Documents/RadarWork/ESP32_to_Python_GUI&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
