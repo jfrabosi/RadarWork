@@ -5,13 +5,13 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Src/examples/JJH/jjh.c 
+../Src/examples/JJH/jjh_v2.c 
 
 OBJS += \
-./Src/examples/JJH/jjh.o 
+./Src/examples/JJH/jjh_v2.o 
 
 C_DEPS += \
-./Src/examples/JJH/jjh.d 
+./Src/examples/JJH/jjh_v2.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,7 +21,7 @@ Src/examples/JJH/%.o Src/examples/JJH/%.su Src/examples/JJH/%.cyclo: ../Src/exam
 clean: clean-Src-2f-examples-2f-JJH
 
 clean-Src-2f-examples-2f-JJH:
-	-$(RM) ./Src/examples/JJH/jjh.cyclo ./Src/examples/JJH/jjh.d ./Src/examples/JJH/jjh.o ./Src/examples/JJH/jjh.su
+	-$(RM) ./Src/examples/JJH/jjh_v2.cyclo ./Src/examples/JJH/jjh_v2.d ./Src/examples/JJH/jjh_v2.o ./Src/examples/JJH/jjh_v2.su
 
 .PHONY: clean-Src-2f-examples-2f-JJH
 

@@ -1,7 +1,0 @@
-../Src/examples/JJH/jjh.c:485:13:set_custom_config	16	static
-../Src/examples/JJH/jjh.c:393:13:empty_uart_input_buffer	16	static
-../Src/examples/JJH/jjh.c:588:13:do_sensor_calibration	48	static
-../Src/examples/JJH/jjh.c:503:13:cleanup	8	static
-../Src/examples/JJH/jjh.c:354:13:get_esp32_serial.constprop	96	static
-../Src/examples/JJH/jjh.c:400:13:load_config	88	static
-../Src/examples/JJH/jjh.c:159:5:acconeer_main_JJH	456	static

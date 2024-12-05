@@ -202,7 +202,7 @@ int acconeer_main_JJH(int argc, char *argv[])
 
   while(true){
 
-    if (change_config){
+    while (change_config){
       cleanup(&resources);
 
       resources.config = acc_detector_distance_config_create();
@@ -448,7 +448,7 @@ static bool load_config(config_settings_t *config){
   }
 
   printf("M806\n");
-  printf("Invalid config format. Default settings applied.\n");
+  printf("Invalid config format.\n");
   return false;
 }
 

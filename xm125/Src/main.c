@@ -126,7 +126,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 //  acconeer_main(0, NULL);
-	acconeer_main_JJH(0, NULL);
+  acconeer_main_JJH_V2(0, NULL);
 
   /* USER CODE END 2 */
 

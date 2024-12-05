@@ -224,14 +224,38 @@ Next steps:
 - Look at current sonar implementation, see how they do low-power and GPS elevation
 - Account for GPS elevation, add to data log header and add config option to auto-account for elevation in data
 - Email testing findings to Talke, Lee, and Ridgely
-
+...
 - Design 3D-printed insert for waterproof box, get printed at Marin Library Lab
 - Assemble and test waterproofed unit on Fo-SHIP
-
+...
 - Rework the code to use multitasking, multiple code files
 - Improve the communication protocol between STM and ESP?
 - Improve the SD card writing (use interrupts?)
 - Implement low-power mode on the ESP32
 - Characterize power draw from components (ESP32, STM32/radar, GPS), account for update rate
-
+...
 - Implement auto-ranging mode?
+
+
+12-3-24 ----------------------------------------------------------------------------------------------------------------
+
+MBARI testing went well. Job hunt has been brutal and taxing, but I finally signed an offer. Here's hoping everything
+goes through.
+
+Done today:
+- Created a new ESP32 project (for implementing multitasking and multiple files) and defined file structure
+- Created BluetoothManager, can now connect to BT using phone (like before) and send/receive data (with delay)
+- Created GPSManager, can now enable/disable GPS, can read and parse messages, and set up the timer module
+- Started SDCardManager
+
+For tomorrow:
+- Finish SDCardManager, be able to save GPS messages to data log and everything else to debug (make a dummy DIR!)
+- Implement power-saving measures, entering sleep when possible after BT disables
+  - First use a timer, then use the RX pin (TX of STM32)
+  - When powered on, write the current state of the lat/long/elev/time to data, then sleep again
+- Implement ConfigManager, which handles the config menu and setting/reading/saving configs
+- Rework M-codes into a more standard byte pattern?
+- Update power-saving to work from STM32 UART pings
+  - Will require sending the data more than once... perhaps save a buffer?
+  - Save N-1 readings on STM32, send wake-up, take one more radar measurement, then send buffer (N data)?
+  - Possibly send all "detected distances" instead of just top pick?

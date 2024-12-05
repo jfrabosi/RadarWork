@@ -22,7 +22,7 @@
 "./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.o"
 "./Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.o"
 "./Src/algorithms/acc_algorithm.o"
-"./Src/examples/JJH/jjh.o"
+"./Src/examples/JJH/jjh_v2.o"
 "./Src/integration/acc_hal_integration_stm32cube_xm.o"
 "./Src/integration/acc_integration_cortex.o"
 "./Src/integration/acc_integration_log.o"
