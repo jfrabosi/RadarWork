@@ -15,8 +15,6 @@
 #define CHIP_SELECT_PIN 33
 
 // Function declarations
-void monitorGPSData();
-void monitorBluetoothData();
 void createInitialFiles();
 void logTimestampedData();
 
@@ -25,6 +23,7 @@ char *debugFilePath = nullptr;
 char *dataFilePath = nullptr;
 
 RTC_PCF8523 rtc; // Create RTC object
+int32_t counter = 0;
 
 void setup()
 {
@@ -45,37 +44,22 @@ void setup()
   }
 
   // Initialize managers
-  GPSManager::getInstance().initialize(GPS_RX_PIN, GPS_TX_PIN, GPS_POWER_PIN, rtc);
-  GPSManager::getInstance().setDebugMode(false);
-  Serial.println("GPS initialized and powered on");
-
   BluetoothManager::getInstance().initialize(DEVICE_NAME, LED_PIN);
   Serial.println("Bluetooth initialized");
 
-  if (!SDCardManager::getInstance().initialize(CHIP_SELECT_PIN, rtc))
-  {
-    Serial.println("SD Card initialization failed!");
-    while (1)
-      delay(10);
-  }
-  Serial.println("SD Card initialized");
+  GPSManager::getInstance().initialize(GPS_RX_PIN, GPS_TX_PIN, GPS_POWER_PIN, rtc);
+  Serial.println("GPS initialized and powered on");
 
-  // Create initial log files
-  createInitialFiles();
+  // if (!SDCardManager::getInstance().initialize(CHIP_SELECT_PIN, rtc))
+  // {
+  //   Serial.println("SD Card initialization failed!");
+  //   while (1)
+  //     delay(10);
+  // }
+  // Serial.println("SD Card initialized");
 
-  // Create GPS task
-  xTaskCreatePinnedToCore(
-      [](void *parameter)
-      {
-        GPSManager::getInstance().gpsTask();
-      },
-      "gps_task",
-      4096,    // Stack size
-      nullptr, // Parameters
-      1,       // Priority
-      nullptr, // Task handle
-      1        // Core ID
-  );
+  // // Create initial log files
+  // createInitialFiles();
 
   // Create Bluetooth task
   xTaskCreatePinnedToCore(
@@ -91,15 +75,28 @@ void setup()
       0        // Core ID
   );
 
+  // Create GPS task
+  xTaskCreatePinnedToCore(
+      [](void *parameter)
+      {
+        GPSManager::getInstance().gpsTask();
+      },
+      "gps_task",
+      4096,    // Stack size
+      nullptr, // Parameters
+      1,       // Priority
+      nullptr, // Task handle
+      1        // Core ID
+  );
+
   Serial.println("Setup complete");
 }
 
 void loop()
 {
-  monitorGPSData();
-  monitorBluetoothData();
-  logTimestampedData();
-  vTaskDelay(pdMS_TO_TICKS(100));
+  BluetoothManager::getInstance().sendMessageSTM32("Decaseconds since start: %i", counter);
+  counter++;
+  vTaskDelay(pdMS_TO_TICKS(10000));
 }
 
 void createInitialFiles()
@@ -134,18 +131,6 @@ void createInitialFiles()
   SDCardManager::getInstance().flushDataBuffer(); // Force write to SD card
 }
 
-void monitorBluetoothData()
-{
-  static char buffer[256];
-
-  if (BluetoothManager::getInstance().receiveMessage(buffer, sizeof(buffer), 0))
-  {
-    // Log received message to debug file
-    SDCardManager::getInstance().appendDebug("BT Received: %s", buffer);
-    Serial.println("Appended to debug!");
-  }
-}
-
 void logTimestampedData()
 {
   static uint32_t lastLogTime = 0;
@@ -160,45 +145,5 @@ void logTimestampedData()
                                             (millis() % 1000));
     lastLogTime = millis();
     Serial.println("Appended to data!");
-  }
-}
-
-void monitorGPSData()
-{
-  static bool fixReported = false;
-
-  if (GPSManager::getInstance().hasValidFix())
-  {
-    if (!fixReported)
-    {
-      Serial.println("GPS Fix obtained!");
-      BluetoothManager::getInstance().sendMessage("GPS Fix obtained!");
-      SDCardManager::getInstance().appendDebug("GPS Fix obtained!");
-      fixReported = true;
-    }
-
-    const GPSData &gpsData = GPSManager::getInstance().getCurrentLocation();
-
-    // Format time as HH:MM:SS
-    char timeStr[9];
-    snprintf(timeStr, sizeof(timeStr), "%02d:%02d:%02d",
-             gpsData.hour, gpsData.minute, gpsData.second);
-
-    // Log GPS data
-    SDCardManager::getInstance().appendDebug("GPS Time: %s PST", timeStr);
-    SDCardManager::getInstance().appendDebug("GPS Location: %s %s",
-                                             gpsData.latitude, gpsData.longitude);
-    SDCardManager::getInstance().appendDebug("GPS Elevation: %s", gpsData.elevation);
-
-    // Send to Bluetooth
-    BluetoothManager::getInstance().sendMessage("Time: %s PST", timeStr);
-    BluetoothManager::getInstance().sendMessage("Location: %s %s",
-                                                gpsData.latitude, gpsData.longitude);
-    BluetoothManager::getInstance().sendMessage("Elevation: %s",
-                                                gpsData.elevation);
-
-    // Synchronize RTC if needed
-    GPSManager::getInstance().syncRTCWithGPS();
-    GPSManager::getInstance().powerOff();
   }
 }

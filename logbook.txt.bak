@@ -259,3 +259,29 @@ For tomorrow:
   - Will require sending the data more than once... perhaps save a buffer?
   - Save N-1 readings on STM32, send wake-up, take one more radar measurement, then send buffer (N data)?
   - Possibly send all "detected distances" instead of just top pick?
+  
+  
+12-4-24 ----------------------------------------------------------------------------------------------------------------
+
+Done today:
+- Finished SDCardManager, can save to data and debug logs
+- Drew some preliminary FSMs for the ESP and STM
+- Re-worked the M-codes to use bytes instead on the STM
+  - For example, a message might look like "O:?\0", where O: are header bytes, ? is cmd byte, and \0 is null terminator
+
+For tomorrow:
+- Prep for and go to interview at White Industries
+- Finish the FSMs and determine tasks, shares, and queues (task diagram..?)
+- Review existing managers and add/remove to fit FSMs/tasks
+
+
+12-10-24 ----------------------------------------------------------------------------------------------------------------
+
+Done today:
+- Fully documented and refined BluetoothManager and GPSManager
+- Drew task "outline" for both above (functions, inputs, and outputs)
+- Added a millis() overflow condition in the GPSManager
+
+For tomorrow:
+- Review SDCardManager code and task diagram
+- Start working on 

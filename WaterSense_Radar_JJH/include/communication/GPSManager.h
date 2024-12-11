@@ -1,9 +1,11 @@
+// include/communication/GPSManager.h
 #pragma once
 
 #include <HardwareSerial.h>
 #include "RTClib.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include "communication/BluetoothManager.h"
 
 struct GPSData
 {
@@ -26,57 +28,41 @@ public:
 
   bool initialize(uint8_t rxPin, uint8_t txPin, uint8_t powerPin, RTC_PCF8523 &rtcRef);
   void gpsTask();
-
-  // Power management
   void powerOn();
   void powerOff();
-
-  // GPS data access
   const GPSData &getCurrentLocation() const { return m_currentData; }
   bool hasValidFix() const { return m_hasFix; }
-
-  // Debug control
-  void setDebugMode(bool enable) { m_debugMode = enable; }
-  bool isDebugEnabled() const { return m_debugMode; }
-
-  // RTC synchronization
   void syncRTCWithGPS();
 
 private:
   GPSManager() : m_isEnabled(false),
                  m_hasFix(false),
                  m_powerPin(0),
-                 m_pRTC(nullptr),
-                 m_debugMode(false),
-                 m_lastDebugPrint(0) {}
+                 m_pRTC(nullptr) {}
   ~GPSManager() = default;
 
   GPSManager(const GPSManager &) = delete;
   GPSManager &operator=(const GPSManager &) = delete;
 
-  // Internal helper functions
   bool parseGPGGA(const char *sentence);
-  void convertDMtoDMS(float decimal_degrees, char *result, size_t size, bool isLat, char direction);
-  int8_t getUTCOffset();
-  bool isDST(uint16_t year, uint8_t month, uint8_t day, uint8_t hour);
+  void convertDDtoDMS(float decimal_degrees, char *result, size_t size, bool isLat, char direction);
   void processIncomingData();
-  void printDebugInfo(const char *sentence);
+  void logStatus(const char *message);
 
-  // Member variables
-  HardwareSerial m_gpsSerial{1}; // Using UART1
-  GPSData m_currentData;
-  bool m_isEnabled;
-  bool m_hasFix;
-  uint8_t m_powerPin;
-  RTC_PCF8523 *m_pRTC; // Pointer to RTC object
-  bool m_debugMode;
-  uint32_t m_lastDebugPrint;
-  uint32_t m_lastGPSTime;
+  // member variables
+  HardwareSerial m_gpsSerial { 1 }; // using UART1
+  GPSData m_currentData;            // current GPS time/lat/long/pos
+  bool m_isEnabled;                 // is GPS on?
+  bool m_hasFix;                    // does GPS have a good fix? see parseGPGGA
+  uint8_t m_powerPin;               // connected to MOSFET (GND switch, see init function)
+  RTC_PCF8523 *m_pRTC;              // pointer to RTC object
+  uint32_t m_lastGPSTime;           // tracks time since last fix
+  BluetoothManager *m_pBT;          // pointer to Bluetooth Manager
 
-  static constexpr uint32_t GPS_TIMEOUT = 5 * 60 * 1000;
-  static constexpr uint32_t GPS_BAUD_RATE = 9600;
-  static constexpr size_t MAX_SENTENCE_LENGTH = 256;
-  static constexpr int8_t NUM_GPS_AVERAGES = 10;
-  static constexpr int8_t NUM_GPS_WARMUPS = 10;
-  static constexpr uint32_t DEBUG_PRINT_INTERVAL = 30000; // Print debug every 1 second
+  // parameters
+  static constexpr uint32_t GPS_TIMEOUT = 5 * 60 * 1000;  // update rate for GPS in ms
+  static constexpr uint32_t GPS_BAUD_RATE = 9600;         // baud rate, based on GPS model
+  static constexpr size_t MAX_SENTENCE_LENGTH = 256;      // max characters in NMEA message
+  static constexpr int8_t NUM_GPS_AVERAGES = 10;          // number of averages to take for lat/long/elev
+  static constexpr int8_t NUM_GPS_WARMUPS = 10;           // number of warmup (discarded) readings for lat/long/elev
 };

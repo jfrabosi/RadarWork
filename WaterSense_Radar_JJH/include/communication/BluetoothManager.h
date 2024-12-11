@@ -19,10 +19,9 @@ public:
   bool initialize(const char *deviceName, uint8_t ledPin);
   void bluetoothTask();
   bool sendMessage(const char *format, ...);
-  bool sendFormattedMessage(const char *prefix, const char *message, bool useDelay = true);
-  bool receiveMessage(char *buffer, size_t bufferSize, uint32_t timeout = 0);
-  void disable();
-  void enable();
+  bool sendMessageSTM32(const char *format, ...);
+  void powerOff();
+  void powerOn();
   bool isEnabled() const { return m_isEnabled; }
   void setTextWidth(uint8_t width) { m_textWidth = width; }
   uint8_t getTextWidth() const { return m_textWidth; }
@@ -30,33 +29,32 @@ public:
 private:
   BluetoothManager() : m_isEnabled(false),
                        m_messageQueue(nullptr),
-                       m_textWidth(40),
-                       m_taskHandle(nullptr) {}
+                       m_textWidth(40) {}
   ~BluetoothManager();
 
   BluetoothManager(const BluetoothManager &) = delete;
   BluetoothManager &operator=(const BluetoothManager &) = delete;
 
-  // Internal methods
   void flushReceiveBuffer();
   bool createMessageQueue();
+  bool sendMessageInput(const char *format, ...);
+  bool sendFormattedMessage(const char *prefix, const char *message, bool useDelay = true);
+  bool receiveMessage(char *buffer, size_t bufferSize, uint32_t timeout = 0);
   void sendWithWrapping(const char *prefix, const char *text, bool useDelay);
   void logStatus(const char *message);
 
-  BluetoothSerial m_serialBT;
-  bool m_isEnabled;
-  uint8_t m_ledPin;
-  QueueHandle_t m_messageQueue;
-  uint8_t m_textWidth;
-  TaskHandle_t m_taskHandle;
+  // member variables
+  BluetoothSerial m_serialBT;   // serial UART object
+  bool m_isEnabled;             // is BT running?
+  uint8_t m_ledPin;             // pin for BT status LED
+  QueueHandle_t m_messageQueue; // queue for incoming (from user) messages
+  uint8_t m_textWidth;          // width for text wrapping, character count
 
-  static constexpr size_t QUEUE_SIZE = 10;
-  static constexpr size_t MAX_MESSAGE_SIZE = 256;
-  static constexpr uint32_t BT_TIMEOUT = 1 * 60 * 1000;
-  static constexpr uint32_t MESSAGE_DELAY = 100;
-  static constexpr uint32_t TASK_STACK_SIZE = 4096;
-  static constexpr UBaseType_t TASK_PRIORITY = 2;
-  static constexpr BaseType_t CORE_ID = 0;
+  // parameters
+  static constexpr size_t QUEUE_SIZE = 10;                // max num of messages in queue
+  static constexpr size_t MAX_MESSAGE_SIZE = 256;         // max size of individual messages
+  static constexpr uint32_t BT_TIMEOUT = 100 * 60 * 1000;  // how long before BT turns off, in ms
+  static constexpr uint32_t MESSAGE_DELAY = 100;          // delay in ms for each line printed to BT
 
   uint32_t m_lastActivityTime;
 };

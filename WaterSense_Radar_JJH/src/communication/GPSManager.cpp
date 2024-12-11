@@ -1,15 +1,27 @@
+// src/communication/GPSManager.cpp
+#include "communication/GPSManager.h"
 #include "communication/GPSManager.h"
 #include <Arduino.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
+
+/**
+ * @brief Initializes the GPS Manager
+ * @param rxPin Pin number for RX pin on ESP32 (connects to GPS TX)
+ * @param txPin Pin number for TX pin on ESP32 (connects to GPS RX)
+ * @param powerPin Pin number for MOSFET pin on ESP32 (MOSFET connects GPS GND to ESP32 GND)
+ * @param rtcRef Pointer to RTC object
+ * @return true for successful initialization, false if error occurred
+ */
 bool GPSManager::initialize(uint8_t rxPin, uint8_t txPin, uint8_t powerPin, RTC_PCF8523& rtcRef) {
   m_powerPin = powerPin;
-  m_pRTC = &rtcRef;  // Store reference to RTC
-  
+  m_pRTC = &rtcRef;  // store reference to RTC
+  m_pBT = &BluetoothManager::getInstance(); // store reference to BT manager
+
   pinMode(m_powerPin, OUTPUT);
-  digitalWrite(m_powerPin, HIGH);  // Start with GPS powered on
+  digitalWrite(m_powerPin, HIGH);  // start with GPS powered on
 
   m_gpsSerial.begin(GPS_BAUD_RATE, SERIAL_8N1, rxPin, txPin);
   m_isEnabled = true;
@@ -18,41 +30,100 @@ bool GPSManager::initialize(uint8_t rxPin, uint8_t txPin, uint8_t powerPin, RTC_
   return true;
 }
 
+
+/**
+ * @brief Main task for GPS Manager
+ * @return none
+ *
+ * GPSTask has three main functions:
+ * - Check if timeout has been exceeded (power-saving)
+ * - Check if any NMEA messages are received
+ * - Check if position/time fix has been acquired
+ *
+ * The GPS will automatically find its position/time once every GPS_TIMEOUT interval.
+ * The function parseGPGGA explains what a "good fix" looks like, and how the readings
+ * are averaged.
+ * 
+ * The GPS will automatically save the new "good fix" to the debug log and radar config.
+ * 
+ * Time is always saved in UTC. It is up to the user to convert it to the time zone based
+ * on the current date and GPS position (usually PST/PDT)
+ */
 void GPSManager::gpsTask() {
   while (true) {
-    // Check for Bluetooth timeout
-    if (!m_isEnabled && ((millis() - m_lastGPSTime) > GPS_TIMEOUT))
+    
+    // check if timeout exceeded OR millis overflowed (every 51 days)
+    bool timeout_exceeded = ((millis() - m_lastGPSTime) > GPS_TIMEOUT) ||
+                            ((millis() - m_lastGPSTime) < 0);
+
+    // turn on GPS after timeout exceeded
+    if (!m_isEnabled && timeout_exceeded)
     {
       powerOn();
       vTaskDelay(pdMS_TO_TICKS(100));
       continue;
     }
+
+    // if on, check for (and process) any GPS NMEA messages
     if (m_isEnabled) {
       processIncomingData();
     }
+
+    // if position/time located, save, then reset timeout and power off
     if (m_hasFix) {
-      // todo: print/save GPS data
-      Serial.println("\n=== GPS Location Saved ===");
+
+      // send GPS data over Bluetooth
+      m_pBT->sendMessage("=== New GPS Fix ===");
+      m_pBT->sendMessage("Time: %02d:%02d:%02d UTC",
+                         m_currentData.hour,
+                         m_currentData.minute,
+                         m_currentData.second);
+      m_pBT->sendMessage("Location: %s %s",
+                         m_currentData.latitude,
+                         m_currentData.longitude);
+      m_pBT->sendMessage("Elevation: %s",
+                         m_currentData.elevation);
+      m_pBT->sendMessage("==================");
+
+      // TODO: save GPS position data to config
       m_lastGPSTime = millis();
-      // powerOff();
+      powerOff();
       vTaskDelay(pdMS_TO_TICKS(100));
     }
-    vTaskDelay(pdMS_TO_TICKS(100)); // 100ms delay to prevent task starvation
+
+    // prevent task starvation
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
 
+
+/**
+ * @brief Enable / powers on the GPS receiver
+ * @return none
+ * 
+ * MOSFET acts like a switch, connecting GPS GND to ESP32 GND. If FET is high, then
+ * switch is closed and power is on. If FET is low, then switch is open and no power.
+ */
 void GPSManager::powerOn()
 {
   digitalWrite(m_powerPin, HIGH);
-  delay(100); // Give GPS time to wake up
+  delay(100); // give GPS time to wake up
 
-  // Send wakeup command
+  // send wakeup command
   m_gpsSerial.write(0xFF);
   delay(100);
 
   m_isEnabled = true;
 }
 
+
+/**
+ * @brief Disables / powers off the GPS receiver
+ * @return none
+ *
+ * MOSFET acts like a switch, connecting GPS GND to ESP32 GND. If FET is high, then
+ * switch is closed and power is on. If FET is low, then switch is open and no power.
+ */
 void GPSManager::powerOff()
 {
   digitalWrite(m_powerPin, LOW);
@@ -60,6 +131,15 @@ void GPSManager::powerOff()
   m_hasFix = false;
 }
 
+
+/**
+ * @brief Adjusts the RTC time using the GPS readings
+ * @return none
+ *
+ * Can't just overwrite RTC time with GPS time because of day/night boundary!
+ * Need to be careful to preserve current date if close to midnight turnover
+ * (23:59:59 -> 00:00:00)
+ */
 void GPSManager::syncRTCWithGPS()
 {
   if (!m_hasFix || !m_pRTC)
@@ -67,24 +147,29 @@ void GPSManager::syncRTCWithGPS()
 
   DateTime now = m_pRTC->now();
 
-  // Convert times to seconds for comparison
+  // convert times to seconds for comparison
   int32_t rtc_seconds = ((int32_t)now.hour() * 60 + now.minute()) * 60 + now.second();
   int32_t gps_seconds = ((int32_t)m_currentData.hour * 60 + m_currentData.minute) * 60 + m_currentData.second;
 
-  // Calculate difference
+  // calculate difference
   int32_t second_diff = gps_seconds - rtc_seconds;
 
-  // Handle day boundary cases
+  // handle day boundary cases
+  // if difference is more than 12 hours, we're likely crossing midnight
   if (second_diff > 12 * 3600)
   {
+    // GPS time is ahead, but we're actually crossing backwards
+    // e.g., RTC: 00:01:00, GPS: 23:10:00 (previous day)
     second_diff -= 24 * 3600;
   }
   else if (second_diff < -12 * 3600)
   {
+    // GPS time is behind, but we're actually crossing forwards
+    // e.g., RTC: 23:55:00, GPS: 00:05:00 (next day)
     second_diff += 24 * 3600;
   }
 
-  // Update if there's a difference
+  // update if there's a difference
   if (second_diff != 0)
   {
     DateTime adjustment = now;
@@ -107,6 +192,67 @@ void GPSManager::syncRTCWithGPS()
   }
 }
 
+
+/**
+ * @brief Processes incoming data from GPS, searching for GPGGA messages
+ * @return none
+ * 
+ * First, checks if any new data from GPS UART. If so, checks if it's a GPGGA
+ * message. If so, parse the message using parseGPGGA.
+ */
+void GPSManager::processIncomingData()
+{
+  static char buffer[MAX_SENTENCE_LENGTH];
+  static size_t bufferIndex = 0;
+
+  while (m_gpsSerial.available())
+  {
+    char c = m_gpsSerial.read();
+
+    if (c == '$')
+    { // start of new NMEA sentence
+      bufferIndex = 0;
+    }
+
+    if (bufferIndex < MAX_SENTENCE_LENGTH - 1)
+    {
+      buffer[bufferIndex++] = c;
+
+      if (c == '\n' || c == '\r')
+      { // end of sentence
+        buffer[bufferIndex] = '\0';
+
+        if (strncmp(buffer, "$GPGGA", 6) == 0)
+        {
+          m_hasFix = parseGPGGA(buffer);
+        }
+
+        bufferIndex = 0;
+      }
+    }
+    else
+    {
+      bufferIndex = 0; // buffer overflow protection
+    }
+  }
+}
+
+
+/**
+ * @brief Parses GPGGA messages and calculates average position
+ * @return true if fix is acquired (average position determined), false otherwise
+ *
+ * GPGGA messages contain relevant info for this implementation (lat/long/elev, time,
+ * number of satellites, etc.). The first part of this function parses incoming
+ * messages and rejects them if they fail to fit the format (or if not enough satellites
+ * are in view).
+ * 
+ * If the message is valid, the function increments a counter validCount. The first
+ * NUM_GPS_WARMUPS messages are discarded. After this, the lat/long/elev of NUM_GPS_AVERAGES 
+ * messages are averaged to get a better estimate of position. Once all averages are taken,
+ * the current time is adjusted to the current timezone, the lat/long are converted to the
+ * proper format, and the time/lat/long/elev are saved.
+ */
 bool GPSManager::parseGPGGA(const char* sentence) {
   static int8_t validCount = -NUM_GPS_WARMUPS;
   static float latBin = 0.0f;
@@ -114,23 +260,23 @@ bool GPSManager::parseGPGGA(const char* sentence) {
   static float elevBin = 0.0f;
   char* ptr = const_cast<char*>(sentence);
   
-  // Skip to time field
+  // skip to time field
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
 
-  // Parse time
+  // parse time
   int time = atoi(ptr);
   m_currentData.hour = time / 10000;
   m_currentData.minute = (time / 100) % 100;
   m_currentData.second = time % 100;
 
-  // Skip to latitude
+  // skip to latitude
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   
-  // Parse latitude
+  // parse latitude
   float rawLat = atof(ptr);
   if (rawLat == 0.0f) return false;
   
@@ -138,18 +284,18 @@ bool GPSManager::parseGPGGA(const char* sentence) {
   float latMinutes = fmod(rawLat, 100.0);
   float latitude = latDegrees + (latMinutes / 60.0);
   
-  // Skip to N/S indicator
+  // skip to N/S indicator
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   char latDirection = *ptr;
   
-  // Skip to longitude
+  // skip to longitude
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   
-  // Parse longitude
+  // parse longitude
   float rawLon = atof(ptr);
   if (rawLon == 0.0f) return false;
   
@@ -157,40 +303,40 @@ bool GPSManager::parseGPGGA(const char* sentence) {
   float lonMinutes = fmod(rawLon, 100.0);
   float longitude = lonDegrees + (lonMinutes / 60.0);
   
-  // Skip to E/W indicator
+  // skip to E/W indicator
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   char lonDirection = *ptr;
 
-  // Skip to fix quality
+  // skip to fix quality
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   int fixQuality = atoi(ptr);
   if (fixQuality == 0) return false;
 
-  // Skip to number of satellites
+  // skip to number of satellites
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   int satellites = atoi(ptr);
   if (satellites < 4) return false;
 
-  // Skip to HDOP
+  // skip to HDOP
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   float hdop = atof(ptr);
   if (hdop > 5.0) return false;
 
-  // Parse elevation
+  // parse elevation
   ptr = strchr(ptr, ',');
   if (!ptr) return false;
   ptr++;
   float elevation = atof(ptr);
   
-  // Increment valid count
+  // increment valid count
   validCount++;
   if (validCount <= 0) return false;
   if (validCount <= NUM_GPS_AVERAGES)
@@ -201,7 +347,7 @@ bool GPSManager::parseGPGGA(const char* sentence) {
     return false;
   }
 
-  // If we get here, we've recorded enough to average
+  // if we get here, we've recorded enough to average
   latitude = latBin / validCount;
   longitude = longBin / validCount;
   elevation = elevBin / validCount;
@@ -211,26 +357,34 @@ bool GPSManager::parseGPGGA(const char* sentence) {
   longBin = 0.0f;
   elevBin = 0.0f;
 
-  // Apply timezone correction
-  int8_t tzOffset = getUTCOffset();
-  m_currentData.hour += tzOffset;
-  if (m_currentData.hour < 0) {
-    m_currentData.hour += 24;
-  } else if (m_currentData.hour >= 24) {
-    m_currentData.hour -= 24;
-  }
+  // convert coordinates to DMS format
+  convertDDtoDMS(latitude, m_currentData.latitude, sizeof(m_currentData.latitude), true, latDirection);
+  convertDDtoDMS(longitude, m_currentData.longitude, sizeof(m_currentData.longitude), false, lonDirection);
 
-  // Convert coordinates to DMS format
-  convertDMtoDMS(latitude, m_currentData.latitude, sizeof(m_currentData.latitude), true, latDirection);
-  convertDMtoDMS(longitude, m_currentData.longitude, sizeof(m_currentData.longitude), false, lonDirection);
-  
-  // Format elevation
+  // format elevation
   snprintf(m_currentData.elevation, sizeof(m_currentData.elevation), "%.1f m", elevation);
+
+  // sync new time with RTC
+  syncRTCWithGPS();
 
   return true;
 }
 
-void GPSManager::convertDMtoDMS(float decimal_degrees, char* result, size_t size, bool isLat, char direction) {
+
+/**
+ * @brief Converts lat/long from DD to DMS format
+ * @param decimal_degrees current lat/long in decimal degrees format
+ * @param result char* to place string result in
+ * @param size size of char* result
+ * @param isLat true if lat input, false if long input
+ * @param direction "N"/"S" for lat, "E"/"W" for long
+ * @return none
+ * 
+ * Decimal degrees (DD) are the format used by GPGGA messages. These are fine, but
+ * degrees-minutes-seconds (DMS) matches Google Maps' format, which can simplify
+ * data processing. This was a personal choice - feel free to change if needed.
+ */
+void GPSManager::convertDDtoDMS(float decimal_degrees, char* result, size_t size, bool isLat, char direction) {
   float abs_degrees = fabs(decimal_degrees);
   int degrees = (int)abs_degrees;
   float minutes = (abs_degrees - degrees) * 60;
@@ -241,112 +395,14 @@ void GPSManager::convertDMtoDMS(float decimal_degrees, char* result, size_t size
            degrees, whole_minutes, seconds, direction);
 }
 
-int8_t GPSManager::getUTCOffset() {
-  if (!m_pRTC) return -8;  // Default to PST if no RTC
-  
-  DateTime now = m_pRTC->now();
-  return isDST(now.year(), now.month(), now.day(), now.hour()) ? -7 : -8;
-}
 
-bool GPSManager::isDST(uint16_t year, uint8_t month, uint8_t day, uint8_t hour) {
-  // DST rules for Pacific Time Zone:
-  // Starts second Sunday in March at 2 AM
-  // Ends first Sunday in November at 2 AM
-  
-  if (month < 3 || month > 11) {
-    return false;  // Jan, Feb, Dec are always Standard Time
-  }
-  
-  if (month > 3 && month < 11) {
-    return true;   // Apr to Oct are always DST
-  }
-
-  int targetSunday;
-  if (month == 3) {
-    // Second Sunday in March
-    targetSunday = 14 - ((year + year/4 + 2) % 7);
-    return (day > targetSunday || (day == targetSunday && hour >= 2));
-  } else {  // month == 11
-    // First Sunday in November
-    targetSunday = 7 - ((year + year/4 + 2) % 7);
-    return (day < targetSunday || (day == targetSunday && hour < 2));
-  }
-}
-
-void GPSManager::processIncomingData()
+// TODO: MAKE THIS LOG TO THE DEBUG BUFFER AND PRINT TO SERIAL BT
+/**
+ * @brief Logs any input/output messages or debug statements
+ * @param message const char* like "Error: GPS exploded :("
+ * @return none
+ */
+void GPSManager::logStatus(const char *message)
 {
-  static char buffer[MAX_SENTENCE_LENGTH];
-  static size_t bufferIndex = 0;
-  static uint32_t sentenceCount = 0;
-
-  while (m_gpsSerial.available())
-  {
-    char c = m_gpsSerial.read();
-
-    if (c == '$')
-    { // Start of new NMEA sentence
-      bufferIndex = 0;
-    }
-
-    if (bufferIndex < MAX_SENTENCE_LENGTH - 1)
-    {
-      buffer[bufferIndex++] = c;
-
-      if (c == '\n' || c == '\r')
-      { // End of sentence
-        buffer[bufferIndex] = '\0';
-
-        if (strncmp(buffer, "$GPGGA", 6) == 0)
-        {
-          // Debug print if enabled
-          if (m_debugMode)
-          {
-            printDebugInfo(buffer);
-          }
-          m_hasFix = parseGPGGA(buffer);
-        }
-
-        bufferIndex = 0;
-        sentenceCount++;
-      }
-    }
-    else
-    {
-      bufferIndex = 0; // Buffer overflow protection
-    }
-  }
-}
-
-void GPSManager::printDebugInfo(const char *sentence)
-{
-  uint32_t currentTime = millis();
-
-  // Only print debug info once per DEBUG_PRINT_INTERVAL
-  if (currentTime - m_lastDebugPrint >= DEBUG_PRINT_INTERVAL)
-  {
-    // Extract sentence type (characters between $ and first comma)
-    char sentenceType[6] = {0};
-    const char *commaPos = strchr(sentence, ',');
-    if (commaPos)
-    {
-      size_t typeLen = commaPos - (sentence + 1);
-      if (typeLen < 6)
-      {
-        strncpy(sentenceType, sentence + 1, typeLen);
-        sentenceType[typeLen] = '\0';
-      }
-    }
-
-    Serial.println("\n=== GPS Debug Info ===");
-    Serial.printf("Received NMEA Sentence Type: %s\n", sentenceType);
-    Serial.printf("Raw NMEA Data: %s\n", sentence);
-    Serial.printf("Fix Status: %s\n", m_hasFix ? "Valid Fix" : "No Fix");
-    if (m_hasFix)
-    {
-      Serial.printf("Current Position: %s %s\n",
-                    m_currentData.latitude, m_currentData.longitude);
-    }
-
-    m_lastDebugPrint = currentTime;
-  }
+  Serial.println(message);
 }
