@@ -20,6 +20,7 @@ struct GPSData
 class GPSManager
 {
 public:
+  // singleton pattern
   static GPSManager &getInstance()
   {
     static GPSManager instance;
@@ -28,10 +29,12 @@ public:
 
   bool initialize(uint8_t rxPin, uint8_t txPin, uint8_t powerPin, RTC_PCF8523 &rtcRef);
   void gpsTask();
+  
   void powerOn();
   void powerOff();
   const GPSData &getCurrentLocation() const { return m_currentData; }
   bool hasValidFix() const { return m_hasFix; }
+  bool isEnabled() const { return m_isEnabled; }
   void syncRTCWithGPS();
 
 private:
@@ -41,13 +44,15 @@ private:
                  m_pRTC(nullptr) {}
   ~GPSManager() = default;
 
+  // prevent copying
   GPSManager(const GPSManager &) = delete;
   GPSManager &operator=(const GPSManager &) = delete;
 
+  void processIncomingData();
   bool parseGPGGA(const char *sentence);
   void convertDDtoDMS(float decimal_degrees, char *result, size_t size, bool isLat, char direction);
-  void processIncomingData();
-  void logStatus(const char *message);
+  void logStatus(const char *format, ...);
+  void logGPS(const char *format, ...);
 
   // member variables
   HardwareSerial m_gpsSerial { 1 }; // using UART1
@@ -60,9 +65,9 @@ private:
   BluetoothManager *m_pBT;          // pointer to Bluetooth Manager
 
   // parameters
-  static constexpr uint32_t GPS_TIMEOUT = 5 * 60 * 1000;  // update rate for GPS in ms
-  static constexpr uint32_t GPS_BAUD_RATE = 9600;         // baud rate, based on GPS model
-  static constexpr size_t MAX_SENTENCE_LENGTH = 256;      // max characters in NMEA message
-  static constexpr int8_t NUM_GPS_AVERAGES = 10;          // number of averages to take for lat/long/elev
-  static constexpr int8_t NUM_GPS_WARMUPS = 10;           // number of warmup (discarded) readings for lat/long/elev
+  static constexpr uint32_t GPS_TIMEOUT = 4 * 3600 * 1000; // update rate for GPS in ms
+  static constexpr uint32_t GPS_BAUD_RATE = 9600;           // baud rate, based on GPS model
+  static constexpr size_t MAX_SENTENCE_LENGTH = 256;        // max characters in NMEA message
+  static constexpr int8_t NUM_GPS_AVERAGES = 10;            // number of averages to take for lat/long/elev
+  static constexpr int8_t NUM_GPS_WARMUPS = 10;             // number of warmup (discarded) readings for lat/long/elev
 };

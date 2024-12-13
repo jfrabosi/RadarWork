@@ -284,4 +284,34 @@ Done today:
 
 For tomorrow:
 - Review SDCardManager code and task diagram
-- Start working on 
+- Start working on config manager
+
+
+12-11-24 ----------------------------------------------------------------------------------------------------------------
+
+Done today:
+- Refined SDCardManager
+- Created and refined TimeManager
+- Updated main for new demo case, tested a few timestamp
+
+For tomorrow:
+- Fully document TimeManager and SDCardManager
+- Implement ConfigManager and RadarManager (likely radar first)
+- Implement low-power mode
+
+
+12-12-24 ----------------------------------------------------------------------------------------------------------------
+
+Done today:
+- Documented above managers
+- Added RadarManager!
+- Added low-power mode!
+- Found out you can set step length to 0, the STM auto-chooses the step length. decent power consumption savings, but
+  might have accuracy issues?
+- Got some baselines for power consumption; 120mW when everything off, around 500mW at 10Hz, moderate settings?
+
+For tomorrow:
+- Fully document RadarManager (and see if any of the new functions in other managers need to be documented)
+- Implement ConfigManager (bridging the BT and radar)
+- Make sure there's nothing missing from the old implementation
+- Start proper (next developer) documentation

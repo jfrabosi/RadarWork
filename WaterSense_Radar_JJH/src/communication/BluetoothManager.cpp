@@ -1,5 +1,6 @@
 // src/communication/BluetoothManager.cpp
 #include "communication/BluetoothManager.h"
+#include "storage/SDCardManager.h"
 #include <Arduino.h>
 #include <stdarg.h>
 #include <string.h>
@@ -27,7 +28,7 @@ bool BluetoothManager::initialize(const char *deviceName, uint8_t ledPin)
   
   m_isEnabled = true;
   m_lastActivityTime = millis();
-  logStatus("DEBUG: Bluetooth initialized successfully");
+  logStatus("Bluetooth initialized\n");
 
   // create message queue for received messages
   return createMessageQueue();
@@ -73,7 +74,7 @@ void BluetoothManager::bluetoothTask()
           xQueueSend(m_messageQueue, receiveBuffer, pdMS_TO_TICKS(100));
 
           // print the received message to the terminal
-          sendMessage("%s", receiveBuffer);
+          sendMessageESP32("%s", receiveBuffer);
         }
       }
     }
@@ -81,28 +82,6 @@ void BluetoothManager::bluetoothTask()
     // prevent task starvation
     vTaskDelay(pdMS_TO_TICKS(100));
   }
-}
-
-
-/**
- * @brief Sends a message to the BT terminal with prefix "ESP32: "
- * @param format --- Treat this function like a wrapper for printf! ---
- * @return true for successful print, false if error occurred
- * 
- * Use this function for the majority of messages.
- */
-bool BluetoothManager::sendMessage(const char* format, ...) {
-  if (!m_isEnabled) {
-    return false;
-  }
-
-  char buffer[MAX_MESSAGE_SIZE];
-  va_list args;
-  va_start(args, format);
-  vsnprintf(buffer, sizeof(buffer), format, args);
-  va_end(args);
-
-  return sendFormattedMessage("ESP32:", buffer);
 }
 
 
@@ -126,7 +105,31 @@ bool BluetoothManager::sendMessageSTM32(const char *format, ...)
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
 
-  return sendFormattedMessage("STM32:", buffer);
+  return sendFormattedMessage("STM32: ", buffer);
+}
+
+
+/**
+ * @brief Sends a message to the BT terminal with prefix "ESP32: "
+ * @param format --- Treat this function like a wrapper for printf! ---
+ * @return true for successful print, false if error occurred
+ *
+ * Use this function for the majority of messages.
+ */
+bool BluetoothManager::sendMessageESP32(const char *format, ...)
+{
+  if (!m_isEnabled)
+  {
+    return false;
+  }
+
+  char buffer[MAX_MESSAGE_SIZE];
+  va_list args;
+  va_start(args, format);
+  vsnprintf(buffer, sizeof(buffer), format, args);
+  va_end(args);
+
+  return sendFormattedMessage("ESP32: ", buffer);
 }
 
 
@@ -244,7 +247,6 @@ bool BluetoothManager::sendFormattedMessage(const char *prefix, const char *mess
   // log the full message
   logStatus(logBuffer);
 
-  m_lastActivityTime = millis();
   sendWithWrapping(prefix, message, useDelay);
   return true;
 }
@@ -277,7 +279,6 @@ void BluetoothManager::sendWithWrapping(const char* prefix, const char* text, bo
   if (m_textWidth == 0) {
     // no text wrapping
     m_serialBT.print(prefix);
-    m_serialBT.print(" ");
     m_serialBT.println(text);
     if (useDelay) {
         delay(MESSAGE_DELAY);
@@ -293,18 +294,17 @@ void BluetoothManager::sendWithWrapping(const char* prefix, const char* text, bo
   while (start < textLen) {
     if (firstLine) {
       m_serialBT.print(prefix);
-      m_serialBT.print(" ");
     } else {
       // for continuation lines, add spaces to align with first line
       // two more spaces for "indentation"
       m_serialBT.print(prefix);
-      m_serialBT.print("    ");
+      m_serialBT.print("  ");
     }
 
     // calculate available width for text
     size_t availWidth = firstLine ? 
-      m_textWidth - prefixLen - 1 : // -1 for the space after prefix
-      m_textWidth - prefixLen - 4;  // -4 for the extra spacing on continuation
+      m_textWidth - prefixLen : // 
+      m_textWidth - prefixLen - 2;  // -2 for the extra spacing on continuation
 
     // find where to break the line
     size_t end = start + availWidth;
@@ -334,13 +334,28 @@ void BluetoothManager::sendWithWrapping(const char* prefix, const char* text, bo
   }
 }
 
-
 /**
- * @brief Logs any input/output messages or debug statements
- * @param message const char* like "STM32: Welease Woderick!"
+ * @brief Logs any input/output messages or debug statements to the debug log
+ * @param format --- Treat this function like a wrapper for printf! ---
  * @return none
+ *
+ * Adds "BT:" prefix to all messages
+ * Prints to Serial and queues for SD card if available
  */
-void BluetoothManager::logStatus(const char *message)
+void BluetoothManager::logStatus(const char *format, ...)
 {
-  Serial.println(message);
+  // Buffer for formatting the message
+  char messageBuffer[MAX_MESSAGE_SIZE];
+
+  // Handle variable arguments
+  va_list args;
+  va_start(args, format);
+  vsnprintf(messageBuffer, sizeof(messageBuffer), format, args);
+  va_end(args);
+
+  // Print to Serial
+  Serial.println(messageBuffer);
+
+  // Queue for SD card if available
+  SDCardManager::getInstance().queueDebug("BT: %s", messageBuffer);
 }

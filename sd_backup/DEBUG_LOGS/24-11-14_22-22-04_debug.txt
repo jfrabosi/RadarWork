@@ -1,0 +1,186 @@
+ESP32: Loaded config file.
+ESP32: Configuration loaded from SD card.
+ESP32: Loaded previous GPS coordinates: 38Â°05'04.69"N 122Â°34'16.59"W
+STM32: M807
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.20,00.80,10.0,04,3,20.0,1,0.50,0,09.9
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: 00.20,00.80,10.0,04,3,20.0,1,0.50,0,09.9
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+STM32: 00:00:07.383 (I) (detector_distance) Detector Distance Config
+STM32: 00:00:07.383 (I) (detector_distance) start_m: 0.200000
+STM32: 00:00:07.384 (I) (detector_distance) end_m: 0.800000
+STM32: 00:00:07.385 (I) (detector_distance) max_step_length: 4
+STM32: 00:00:07.386 (I) (detector_distance) max_profile: PROFILE_3
+STM32: 00:00:07.387 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:00:07.388 (I) (detector_distance) signal_quality: 20.000000
+STM32: 00:00:07.389 (I) (detector_distance) threshold_method: C00:00:07.394 00:00:07.395 (I) (detector_distance) Offset Cal00:00:07.40
+STM32: 0 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:00:07.401 (I) (con00:00:07.408 (I) (config)     enable_loopback  : true
+STM32: 00:00:07.00:00:07.414 (I) (config) double_buffering: false
+STM32: 00:00:07.415 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:00:07.416 (I)00:00:07.425 (I) (detector_00:00:07.426 (I) (00:00:07.430 (I00:00:07.431 (I) (config) inter_sweep_idle_state: R
+STM32: EADY
+STM32: 00:000:00:07.437 (I) (config)     phase_enhancement: true
+STM32: 00:00
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: True
+ESP32: Data File: /DATA/24-11-14_22-22-12_data.txt
+ESP32: Start Time: [24/11/14 22:22:12.892]
+ESP32: Location: 38Â°05'04.69"N 122Â°34'16.59"W
+ESP32: Elevation: 54.8
+ESP32: Start of range: 0.20 m
+ESP32: End of range: 0.80 m
+ESP32: Update rate: 10.0 Hz
+ESP32: Maximum step length: 4 (10.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 20.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 9.9 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+ESP32: Time: 22:23:01 PST
+ESP32: Location: 38Â°05'05.12"N 122Â°34'16.17"W
+ESP32: Elevation: 53.6 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: GPS POWERON
+ESP32: Time: 23:22:17 PST
+ESP32: Location: 38Â°05'05.05"N 122Â°34'16.39"W
+ESP32: Elevation: 50.9 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: M19
+STM32: M19
+STM32: M11
+STM32: M19
+ESP32: GPS POWERON
+ESP32: Time: 00:22:43 PST
+ESP32: Location: 38Â°05'05.06"N 122Â°34'16.06"W
+ESP32: Elevation: 31.4 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 00:22:44
+ESP32: New RTC time: 24/11/15 00:22:43
+STM32: 
+STM32: M1
+ESP32: GPS POWERON
+ESP32: Time: 01:22:16 PST
+ESP32: Location: 38Â°05'05.20"N 122Â°34'16.28"W
+ESP32: Elevation: 32.7 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: 
+STM32: M19
+STM32: b
+ESP32: GPS POWERON
+ESP32: Time: 02:22:34 PST
+ESP32: Location: 38Â°05'05.23"N 122Â°34'16.12"W
+ESP32: Elevation: 35.0 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: 
+STM32: M1
+STM32: M
+STM32: M19
+STM32: M1
+ESP32: GPS POWERON
+ESP32: Time: 03:22:21 PST
+ESP32: Location: 38Â°05'06.79"N 122Â°34'15.93"W
+ESP32: Elevation: 53.5 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 03:22:22
+ESP32: New RTC time: 24/11/15 03:22:21
+STM32: M19
+STM32: M19
+STM32: MüÀ±ô2
+STM32: M1
+STM32: 
+STM32: M1
+STM32: M1
+ESP32: GPS POWERON
+ESP32: Time: 04:22:43 PST
+ESP32: Location: 38Â°05'04.95"N 122Â°34'16.28"W
+ESP32: Elevation: 36.4 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: M1
+STM32: M19
+STM32: 
+STM32: M19
+STM32: M1
+STM32: M
+STM32: 
+ESP32: GPS POWERON
+ESP32: Time: 05:22:17 PST
+ESP32: Location: 38Â°05'05.46"N 122Â°34'16.39"W
+ESP32: Elevation: 48.4 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 05:22:18
+ESP32: New RTC time: 24/11/15 05:22:17
+STM32: M19
+STM32: M19
+STM32: 
+STM32: M1
+STM32: M19
+STM32: 
+STM32: 
+ESP32: GPS POWERON
+ESP32: Time: 06:22:25 PST
+ESP32: Location: 38Â°05'05.12"N 122Â°34'16.34"W
+ESP32: Elevation: 57.5 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: M
+STM32: M1
+STM32: M
+STM32: M1
+STM32: 
+STM32: M19
+STM32: M
+STM32: M19
+STM32: M
+STM32: 
+ESP32: GPS POWERON
+ESP32: Time: 07:22:43 PST
+ESP32: Location: 38Â°05'05.10"N 122Â°34'16.28"W
+ESP32: Elevation: 38.4 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 07:22:44
+ESP32: New RTC time: 24/11/15 07:22:43
+STM32: û|ŸÙÛ	™½ÿù¤øhÀ™Œ™
+STM32: M1
+STM32: M1
+STM32: M19
+STM32: M
+STM32: M19
+ESP32: GPS POWERON
+ESP32: Time: 08:22:18 PST
+ESP32: Location: 38Â°05'05.16"N 122Â°34'16.23"W
+ESP32: Elevation: 50.3 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: M1
+STM32: M1
+STM32: M
+STM32: M1
+STM32: 
+STM32: M19
+STM32: M1
+STM32: M

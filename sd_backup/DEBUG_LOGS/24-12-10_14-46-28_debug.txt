@@ -1,0 +1,11 @@
+GPS Fix obtained!
+GPS Time: 15:03:21 PST
+GPS Location: 34°37'20.83"N 111°25'42.07"W
+GPS Elevation: 47.5 m
+GPS Time: 15:17:15 PST
+GPS Location: 34°37'20.94"N 111°25'42.01"W
+GPS Elevation: 23.2 m
+GPS Time: 15:36:31 PST
+GPS Location: 34°37'20.84"N 111°25'42.29"W
+GPS Elevation: 60.0 m
+GPS Time: 16:54:22 PST

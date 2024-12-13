@@ -10,6 +10,7 @@
 class BluetoothManager
 {
 public:
+  // singleton pattern
   static BluetoothManager &getInstance()
   {
     static BluetoothManager instance;
@@ -18,8 +19,10 @@ public:
 
   bool initialize(const char *deviceName, uint8_t ledPin);
   void bluetoothTask();
-  bool sendMessage(const char *format, ...);
+
   bool sendMessageSTM32(const char *format, ...);
+  bool sendMessageESP32(const char *format, ...);
+  void sendWithWrapping(const char *prefix, const char *text, bool useDelay);
   void powerOff();
   void powerOn();
   bool isEnabled() const { return m_isEnabled; }
@@ -29,9 +32,10 @@ public:
 private:
   BluetoothManager() : m_isEnabled(false),
                        m_messageQueue(nullptr),
-                       m_textWidth(40) {}
+                       m_textWidth(48) {}
   ~BluetoothManager();
 
+  // prevent copying
   BluetoothManager(const BluetoothManager &) = delete;
   BluetoothManager &operator=(const BluetoothManager &) = delete;
 
@@ -40,8 +44,7 @@ private:
   bool sendMessageInput(const char *format, ...);
   bool sendFormattedMessage(const char *prefix, const char *message, bool useDelay = true);
   bool receiveMessage(char *buffer, size_t bufferSize, uint32_t timeout = 0);
-  void sendWithWrapping(const char *prefix, const char *text, bool useDelay);
-  void logStatus(const char *message);
+  void logStatus(const char *format, ...);
 
   // member variables
   BluetoothSerial m_serialBT;   // serial UART object
@@ -53,7 +56,7 @@ private:
   // parameters
   static constexpr size_t QUEUE_SIZE = 10;                // max num of messages in queue
   static constexpr size_t MAX_MESSAGE_SIZE = 256;         // max size of individual messages
-  static constexpr uint32_t BT_TIMEOUT = 100 * 60 * 1000;  // how long before BT turns off, in ms
+  static constexpr uint32_t BT_TIMEOUT = 1 * 60 * 1000;  // how long before BT turns off, in ms
   static constexpr uint32_t MESSAGE_DELAY = 100;          // delay in ms for each line printed to BT
 
   uint32_t m_lastActivityTime;

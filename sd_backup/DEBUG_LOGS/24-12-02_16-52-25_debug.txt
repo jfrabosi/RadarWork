@@ -1,0 +1,120 @@
+ESP32: Loaded config file.
+ESP32: Configuration loaded from SD card.
+ESP32: Loaded previous GPS coordinates: 36°48'09.27"N 121°47'12.41"W
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: 00:15:10.972 (E) (sensor) Invalid sensor handle
+STM32: M807
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,01.50,00.5,04,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M919M91900.50,01.50,00.5,04,3,35.0,1,0.5
+ESP32: Received from STM32: M806
+STM32: Configuration sent to STM32 contains errors!
+STM32: 
+ESP32: ERROR: Couldn't send config.
+STM32: Invalid config format. Default settings applied.
+STM32: 00:15:11.503 (I) (detector_distance) Detector Distance Config
+STM32: 00:15:11.503 (I) (detector_distance) start_m: 0.250000
+STM32: 00:15:11.504 (I) (detector_distance) end_m: 3.000000
+STM32: 00:15:11.505 (I) (detector_distance) max_step_length: 0
+STM32: 00:15:11.506 (I) (detector_distance) max_profile: PROFILE_5
+STM32: 00:15:11.507 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:15:11.508 (I) (detector_distance) signal_quality: 15.000000
+STM32: 00:15:11.509 (I) (detector_distance) threshold_method: C00:15:11.514 (I) (det00:15:11.515 (I) (detector_distance) Of00:15:11.52
+STM32: 0 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:15:11.521 (I) (con00:15:11.528 (I) (config)     enable_loopback  : true
+STM32: 00:15:11.00:15:11.534 (I) (config) double_buffering: false
+STM32: 00:15:11.535 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:15:11.536 (I)00:15:11.545 (I) 00:15:11.546 (I) (config)   00:15:11.550 (00:15:11.551 (I) (config)     phase_enhancement: tru
+STM32: e
+STM32: 00:15:100:15:11.558 (I) (config)     receiver_gain    : hu
+STM32: 00:15:100:15:11.563 (I) (c00:15:11.564 (I) (config)     num_points  00:15:11.569 (I) (config)     profile          : PROFILE_5
+STM32: 00:15:11.570 (I) (config)     prf              : 15.6MHz
+STM32: 00:15:11.570000:15:11.582 (I) (config)     enable_tx        : true
+STM32: 00:1500:15:11.588 (I) (config)     step_length      : 12
+STM32: 00:15:11.589 (I) (config)     hwaas            : 5
+STM32: 00:15:11.590 (I) (config00:15:11.600 (I) (config)     phase_enhancement: true
+STM32: 00:00:15:11.605 (I) (config)     step_length      : 24
+STM32: 00:15:11.606 (I
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: True
+ESP32: Data File: /DATA/24-12-02_16-52-34_data.txt
+ESP32: Start Time: [24/12/02 16:52:34.500]
+ESP32: Location: 36°48'09.27"N 121°47'12.41"W
+ESP32: Elevation: 6.5
+ESP32: Start of range: 0.50 m
+ESP32: End of range: 1.50 m
+ESP32: Update rate: 0.5 Hz
+ESP32: Maximum step length: 4 (10.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 35.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 8.2 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+STM32: M807
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,01.50,00.5,04,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: 00.50,01.50,00.5,04,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+STM32: 00:15:16.332 (I) (detector_distance) Detector Distance Config
+STM32: 00:15:16.332 (I) (detector_distance) start_m: 0.500000
+STM32: 00:15:16.333 (I) (detector_distance) end_m: 1.500000
+STM32: 00:15:16.334 (I) (detector_distance) max_step_length: 4
+STM32: 00:15:16.335 (I) (detector_distance) max_profile: PROFILE_3
+STM32: 00:15:16.336 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:15:16.337 (I) (detector_distance) signal_quality: 35.000000
+STM32: 00:15:16.338 (I) (detector_distance) threshold_method: C00:15:16.343 (I) (de00:15:16.344 (I) (detector_distance) Off00:15:16.34
+STM32: 9 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:15:16.350 (I) (con00:15:16.357 (I) (config)     enable_loopback  : true
+STM32: 00:15:16.00:15:16.363 (I) (config) double_buffering: false
+STM32: 00:15:16.364 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:15:16.365 (I)00:15:16.374 (I) (conf00:15:16.375 (I) (confi00:15:16.379 (I) (c00:15:16.380 (I) (config)     phase_enhancement
+STM32: : true
+STM32: 0000:15:16.387 (I) (config)     receiver_gain    : hu
+STM32: 00:15:100:15:16.392 (I) (config) 00:15:16.393 (I) (config)     num_p00:15:16.398 (I) (config)     profile          : PROFILE_3
+STM32: 00:15:16.399 (I) (config)     prf              : 15.6MHz
+STM32: 00:15:16.4000:15:100:15:16.411 00:15:16.412 (I) (config)     phase_enhan00:15:16.416 (I00:15:16.417 (I) (config)     step_lengt
+STM32: h      : 4
+STM32: 00:15:16.418 (I) (config)     hwaas            : 37
+STM32: 00:15:16.00:15:16.429 (I) (config)     phase_enhancement: true
+STM32: 00:00:15:16.434 (I) (config)     step_length      : 4
+STM32: 00:15:16.435 (I) (config)     hwaas            : 71
+STM32: 00:15:16.436 (I) (config
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: False
+ESP32: Data File: /DATA/24-12-02_16-52-39_data.txt
+ESP32: Start Time: [24/12/02 16:52:39.458]
+ESP32: Location: 36°48'09.27"N 121°47'12.41"W
+ESP32: Elevation: 6.5
+ESP32: Start of range: 0.50 m
+ESP32: End of range: 1.50 m
+ESP32: Update rate: 0.5 Hz
+ESP32: Maximum step length: 4 (10.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 35.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 8.2 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+ESP32: GPS POWERON
+ESP32: GPS POWERON

@@ -1,0 +1,199 @@
+ESP32: Loaded config file.
+ESP32: Configuration loaded from SD card.
+ESP32: Loaded previous GPS coordinates: 36°48'09.27"N 121°47'12.41"W
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPTXT,01,01,02,ANTSTATUS=INIT*25
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: 00:18:20.065 (E) (sensor) Invalid sensor handle
+STM32: M807
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,01.50,00.5,04,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M919M919M91900.50,01.50,00.5,04,3,35.0,1
+ESP32: Received from STM32: M806
+STM32: Configuration sent to STM32 contains errors!
+STM32: 
+ESP32: ERROR: Couldn't send config.
+STM32: Invalid config format. Default settings applied.
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+STM32: 00:18:22.490 (I) (detector_distance) Detector Distance Config
+STM32: 00:18:22.490 (I) (detector_distance) start_m: 0.250000
+STM32: 00:18:22.491 (I) (detector_distance) end_m: 3.000000
+STM32: 00:18:22.492 (I) (detector_distance) max_step_length: 0
+STM32: 00:18:22.493 (I) (detector_dis
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: True
+ESP32: Data File: /DATA/24-12-02_16-55-46_data.txt
+ESP32: Start Time: [24/12/02 16:55:47.563]
+ESP32: Location: 36°48'09.27"N 121°47'12.41"W
+ESP32: Elevation: 6.5
+ESP32: Start of range: 0.50 m
+ESP32: End of range: 1.50 m
+ESP32: Update rate: 0.5 Hz
+ESP32: Maximum step length: 4 (10.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 35.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 8.2 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+STM32: M807
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,01.50,00.5,04,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: 00.50,01.50,00.5,04,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+STM32: 00:18:29.516 (I) (detector_distance) Detector Distance Config
+STM32: 00:18:29.516 (I) (detector_distance) start_m: 0.500000
+STM32: 00:18:29.517 (I) (detector_distance) end_m: 1.500000
+STM32: 00:18:29.518 (I) (detector_distance) max_step_length: 4
+STM32: 00:18:29.519 (I) (detector_dis
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: False
+ESP32: Data File: /DATA/24-12-02_16-55-53_data.txt
+ESP32: Start Time: [24/12/02 16:55:54.588]
+ESP32: Location: 36°48'09.27"N 121°47'12.41"W
+ESP32: Elevation: 6.5
+ESP32: Start of range: 0.50 m
+ESP32: End of range: 1.50 m
+ESP32: Update rate: 0.5 Hz
+ESP32: Maximum step length: 4 (10.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 35.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 8.2 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53

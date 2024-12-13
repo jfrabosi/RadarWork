@@ -1,0 +1,1030 @@
+ESP32: Loaded config file.
+ESP32: Configuration loaded from SD card.
+ESP32: Loaded previous GPS coordinates: 38°05'05.16"N 122°34'16.23"W
+STM32: M807
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.20,00.80,10.0,04,3,20.0,1,0.50,0,09.9
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: 00.20,00.80,10.0,04,3,20.0,1,0.50,0,09.9
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+STM32: 00:00:07.378 (I) (detector_distance) Detector Distance Config
+STM32: 00:00:07.378 (I) (detector_distance) start_m: 0.200000
+STM32: 00:00:07.379 (I) (detector_distance) end_m: 0.800000
+STM32: 00:00:07.380 (I) (detector_distance) max_step_length: 4
+STM32: 00:00:07.381 (I) (detector_distance) max_profile: PROFILE_3
+STM32: 00:00:07.382 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:00:07.383 (I) (detector_distance) signal_quality: 20.000000
+STM32: 00:00:07.384 (I) (detector_distance) threshold_method: C00:00:07.389 (I)00:00:07.390 (I) (detector_distance) Offset 00:00:07.39
+STM32: 5 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:00:07.396 (I) (con00:00:07.403 (I) (config)     enable_loopback  : true
+STM32: 00:00:07.00:00:07.409 (I) (config) double_buffering: false
+STM32: 00:00:07.410 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:00:07.411 (I)00:00:07.420 (I) (detector_distanc00:00:07.4200:00:07.425 (I) (confi00:00:07.426 (I) (config) inter_sweep_idle_
+STM32: state: RE00:00:07.432 (I) (config)     phase_enhancement: true
+STM32: 00:00
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: True
+ESP32: Data File: /DATA/24-11-15_13-54-49_data.txt
+ESP32: Start Time: [24/11/15 13:54:49.892]
+ESP32: Location: 38°05'05.16"N 122°34'16.23"W
+ESP32: Elevation: 50.3
+ESP32: Start of range: 0.20 m
+ESP32: End of range: 0.80 m
+ESP32: Update rate: 10.0 Hz
+ESP32: Maximum step length: 4 (10.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 20.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 9.9 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+STM32: 
+STM32: Stopping radar...
+STM32: Process will take approximately 1.3 seconds.
+STM32: 
+STM32: Radar stopped.
+STM32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.20 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.80 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 04 (10.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 20.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: s
+ESP32: 
+ESP32: Set the start of the measurement range. Current value: 00.20 m
+ESP32: Format: XX.XX
+ESP32:  Input must match format exactly. Enter leading and trailing zeros as appropriate.
+ESP32:  Value must be between 00.10 and 20.00, inclusive.
+ESP32:  Units are in meters.
+ESP32: Notes:
+ESP32:  Generally advised to leave a margin of 0.1m above maximum wave height.
+ESP32:  Keep as high as possible. Greatly affects power consumption and maximum possible update rate.
+ESP32: Example:
+ESP32:  Radar is placed 10m above average wave height, and waves height fluctuates within +/- 1m.
+ESP32:  Start of measurement range should be set to 0.8m.
+ESP32:  User would enter "00.80" into terminal with no quotes.
+ESP32: 
+Input: 01.00
+ESP32: 
+ESP32: Start of measurement range set to 01.00 m
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 01.00 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.80 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 04 (10.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 20.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: e
+ESP32: 
+ESP32: Set the end of the measurement range. Current value: 00.80 m
+ESP32: Format: XX.XX
+ESP32:  Input must match format exactly. Enter leading and trailing zeros as appropriate.
+ESP32:  Value must be between 00.10 and 20.00, inclusive.
+ESP32:  Units are in meters.
+ESP32: Notes:
+ESP32:  Generally advised to leave a margin of 0.1m below maximum wave height.
+ESP32:  Keep as low as possible. Greatly affects power consumption and maximum possible update rate.
+ESP32: Example:
+ESP32:  Radar is placed 10m above average wave height, and waves height fluctuates within +/- 1m.
+ESP32:  End of measurement range should be set to 1.2m.
+ESP32:  User would enter "01.20" into terminal with no quotes.
+ESP32: 
+Input: 05.00
+ESP32: 
+ESP32: End of measurement range set to 05.00 m
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 01.00 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 05.00 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 04 (10.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 20.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: x
+ESP32: 
+ESP32: Send any character to re-open configuration menu.
+ESP32: 
+ESP32: New config file saved
+ESP32: Configuration saved to SD card. Returning to normal operations.
+ESP32: 
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     01.00,05.00,10.0,04,3,20.0,1,0.50,0,09.9
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: 01.00,05.00,10.0,04,3,20.0,1,0.50,0,09.9
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+ESP32: Time: 13:56:37 PST
+ESP32: Location: 36°48'09.25"N 121°47'12.36"W
+ESP32: Elevation: 12.4 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 13:56:39
+ESP32: New RTC time: 24/11/15 13:56:37
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: False
+ESP32: Data File: /DATA/24-11-15_13-56-37_data.txt
+ESP32: Start Time: [24/11/15 13:56:40.388]
+ESP32: Location: 36°48'09.25"N 121°47'12.36"W
+ESP32: Elevation: 12.4 m
+ESP32: Start of range: 1.00 m
+ESP32: End of range: 5.00 m
+ESP32: Update rate: 10.0 Hz
+ESP32: Maximum step length: 4 (10.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 20.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 9.9 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+STM32: M
+STM32: 
+STM32: Stopping radar...
+STM32: Process will take approximately 1.3 seconds.
+STM32: 
+STM32: Radar stopped.
+STM32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 01.00 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 05.00 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 04 (10.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 20.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: s
+ESP32: 
+ESP32: Set the start of the measurement range. Current value: 01.00 m
+ESP32: Format: XX.XX
+ESP32:  Input must match format exactly. Enter leading and trailing zeros as appropriate.
+ESP32:  Value must be between 00.10 and 20.00, inclusive.
+ESP32:  Units are in meters.
+ESP32: Notes:
+ESP32:  Generally advised to leave a margin of 0.1m above maximum wave height.
+ESP32:  Keep as high as possible. Greatly affects power consumption and maximum possible update rate.
+ESP32: Example:
+ESP32:  Radar is placed 10m above average wave height, and waves height fluctuates within +/- 1m.
+ESP32:  Start of measurement range should be set to 0.8m.
+ESP32:  User would enter "00.80" into terminal with no quotes.
+ESP32: 
+Input: 00.50
+ESP32: 
+ESP32: Start of measurement range set to 00.50 m
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 05.00 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 04 (10.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 20.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: e
+ESP32: 
+ESP32: Set the end of the measurement range. Current value: 05.00 m
+ESP32: Format: XX.XX
+ESP32:  Input must match format exactly. Enter leading and trailing zeros as appropriate.
+ESP32:  Value must be between 00.10 and 20.00, inclusive.
+ESP32:  Units are in meters.
+ESP32: Notes:
+ESP32:  Generally advised to leave a margin of 0.1m below maximum wave height.
+ESP32:  Keep as low as possible. Greatly affects power consumption and maximum possible update rate.
+ESP32: Example:
+ESP32:  Radar is placed 10m above average wave height, and waves height fluctuates within +/- 1m.
+ESP32:  End of measurement range should be set to 1.2m.
+ESP32:  User would enter "01.20" into terminal with no quotes.
+ESP32: 
+Input: 04.50
+ESP32: 
+ESP32: End of measurement range set to 04.50 m
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 04 (10.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 20.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: q
+ESP32: 
+ESP32: Set the signal quality. Current value: 20.0
+ESP32: Format: XX.X
+ESP32:  Input must match format exactly. Enter leading and trailing zeros as appropriate.
+ESP32:  Value must be between 00.0 and 35.0, inclusive.
+ESP32:  Units are arbitrary.
+ESP32: Notes:
+ESP32:  Higher signal quality results in a higher signal-to-noise ratio target, and increases the number of averages
+ESP32:  taken for a single datapoint. This generally increases the accuracy of measurements.
+ESP32:  Keep as low as possible. Affects power consumption and maximum possible update rate.
+ESP32: Example:
+ESP32:  The user starts the radar with signal quality setting of 15.0, but measurements appear inaccurate.
+ESP32:  The user should increase the profile setting by 1.0, repeating until the measurements are accurate enough.
+ESP32:  User would enter "16.0" into terminal with no quotes.
+ESP32: 
+Input: 35.0
+ESP32: 
+ESP32: Signal quality set to 35.0
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 04 (10.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 35.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: l
+ESP32: 
+ESP32: Set the maximum step length. Current value: 04 (10.0 mm)
+ESP32: Format: XX
+ESP32:  Input must match format exactly. Enter a single integer between 01 and 99, inclusive.
+ESP32: Notes:
+ESP32:  The maximum step length is set in multiples of 2.5mm. Multiply the inputed setting by 2.5mm to get the maximum step length in mm.
+ESP32:  Set the maximum step length to the desired resolution for measuring wave heights.
+ESP32:  This is an upper bound - the distance algorithm may return finer resolution measurements.
+ESP32:  Keep maximum step length as high as possible. Greatly affects power consumption and maximum possible update rate.
+ESP32: Example:
+ESP32:  The user wants to determine wave heights accurate to within 5mm.
+ESP32:  The user should set the maximum step length to 2, since 2 * 2.5mm = 5mm.
+ESP32:  User would enter "2" into terminal with no quotes.
+ESP32: 
+Input: 06
+ESP32: 
+ESP32: Maximum step length set to 06 (15.0 mm)
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 06 (15.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 35.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 09.9 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: a
+ESP32: 
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,04.50,10.0,06,3,35.0,1,0.50,1,09.9
+ESP32: Received from STM32: 00.50,04.50,10.0,06,3,35.0,1,0.50,1,09.9
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+ESP32: Testing actual update rate...
+STM32: 00:05:48.186 (I) (detector_distance) Detector Distance Config
+STM32: 00:05:48.186 (I) (detector_distance) start_m: 0.500000
+STM32: 00:05:48.187 (I) (detector_distance) end_m: 4.500000
+STM32: 00:05:48.188 (I) (detector_distance) max_step_length: 6
+STM32: 00:05:48.189 (I) (detector_distance) max_profile: PROFILE_3
+STM32: 00:05:48.190 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:05:48.191 (I) (detector_distance) signal_quality: 35.000000
+STM32: 00:05:48.192 (I) (detector_distance) threshold_method: C00:05:48.197 (I) 00:05:48.198 (I) (detector_distance) Offset00:05:48.20
+STM32: 3 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:05:48.204 (I) (con00:05:48.211 (I) (config)     enable_loopback  : true
+STM32: 00:05:48.00:05:48.217 (I) (config) double_buffering: false
+STM32: 00:05:48.218 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:05:48.219 (I)00:05:48.228 (I) (conf00:05:48.229 (I) (confi00:05:48.233 (I) (con00:05:48.234 (I) (config)     phase_enhanceme
+STM32: nt: true
+STM32: 00:05:48.241 (I) (config)     receiver_gain    : hu
+STM32: 00:05:400:05:48.246 (I) (config)     sta00:05:48.247 (I) (config)   00:05:48.252 (I) (config)     profile          : PROFILE_3
+STM32: 00:05:48.253 (I) (config)     prf              : 15.6MHz
+STM32: 00:05:48.2500:05:48.00:05:48.266 (I) (config)     phase_enhancement: tru00:05:48.270 (I) (config)   00:05:48.271 (I) (config)  
+STM32:    step_length      : 6
+STM32: 00:05:48.272 (I) (config)     hwaas            :00:05:48.283 (I) (config)     phase_enhancement: true
+STM32: 00:00:05:48.288 (I) (config)     step_length      : 6
+STM32: 00:05:48.289 (I) (config)     hwaas            : 511
+STM32: 00:05:48.290 (I) (confi
+STM32: [24/11/15 14:00:32.258] 3.074 m, 10.25
+STM32: [24/11/15 14:00:32.400] 3.037 m, 15.76
+STM32: [24/11/15 14:00:32.543] 3.048 m, 9.76
+STM32: M814
+STM32: [24/11/15 14:00:32.685] 3.057 m, 13.63
+STM32: [24/11/15 14:00:32.828] 3.060 m, 29.01
+STM32: [24/11/15 14:00:32.970] 3.061 m, -0.15
+STM32: [24/11/15 14:00:33.113] 3.074 m, 16.41
+STM32: [24/11/15 14:00:33.256] 3.052 m, 15.36
+STM32: [24/11/15 14:00:33.398] 3.063 m, 10.44
+STM32: [24/11/15 14:00:33.541] 3.069 m, 15.61
+STM32: [24/11/15 14:00:33.683] 3.065 m, 19.62
+STM32: [24/11/15 14:00:33.826] 3.066 m, 15.40
+STM32: [24/11/15 14:00:33.968] 3.055 m, 17.56
+STM32: [24/11/15 14:00:34.111] 3.066 m, 22.25
+STM32: [24/11/15 14:00:34.253] 3.064 m, 21.07
+STM32: [24/11/15 14:00:34.396] 3.083 m, 12.57
+STM32: [24/11/15 14:00:34.539] 3.080 m, 11.44
+STM32: [24/11/15 14:00:34.681] 3.075 m, 11.04
+STM32: [24/11/15 14:00:34.824] 3.041 m, 13.60
+STM32: [24/11/15 14:00:34.966] 3.068 m, 15.86
+STM32: [24/11/15 14:00:35.109] 3.059 m, 24.24
+STM32: [24/11/15 14:00:35.251] 3.060 m, 8.24
+STM32: [24/11/15 14:00:35.394] 3.077 m, 17.68
+STM32: [24/11/15 14:00:35.537] 3.073 m, 19.70
+STM32: [24/11/15 14:00:35.679] 3.065 m, 19.28
+STM32: [24/11/15 14:00:35.822] 3.061 m, 18.91
+STM32: [24/11/15 14:00:35.964] 3.053 m, 13.19
+STM32: [24/11/15 14:00:36.107] 3.054 m, 25.96
+STM32: [24/11/15 14:00:36.249] 3.066 m, 15.94
+STM32: [24/11/15 14:00:36.392] 3.062 m, 18.25
+STM32: [24/11/15 14:00:36.535] 3.075 m, 19.58
+STM32: [24/11/15 14:00:36.677] 3.089 m, 11.75
+STM32: [24/11/15 14:00:36.820] 3.058 m, 8.79
+STM32: [24/11/15 14:00:36.962] 3.060 m, 8.35
+STM32: [24/11/15 14:00:37.105] 3.049 m, 20.43
+STM32: [24/11/15 14:00:37.247] 3.053 m, 10.21
+STM32: M815
+STM32: 33
+ESP32: Actual update rate measured as 7.0 Hz.
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 06 (15.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 35.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 07.0 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: l
+ESP32: 
+ESP32: Set the maximum step length. Current value: 06 (15.0 mm)
+ESP32: Format: XX
+ESP32:  Input must match format exactly. Enter a single integer between 01 and 99, inclusive.
+ESP32: Notes:
+ESP32:  The maximum step length is set in multiples of 2.5mm. Multiply the inputed setting by 2.5mm to get the maximum step length in mm.
+ESP32:  Set the maximum step length to the desired resolution for measuring wave heights.
+ESP32:  This is an upper bound - the distance algorithm may return finer resolution measurements.
+ESP32:  Keep maximum step length as high as possible. Greatly affects power consumption and maximum possible update rate.
+ESP32: Example:
+ESP32:  The user wants to determine wave heights accurate to within 5mm.
+ESP32:  The user should set the maximum step length to 2, since 2 * 2.5mm = 5mm.
+ESP32:  User would enter "2" into terminal with no quotes.
+ESP32: 
+Input: 08
+ESP32: 
+ESP32: Maximum step length set to 08 (20.0 mm)
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 08 (20.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 35.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 07.0 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: a
+ESP32: 
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,04.50,10.0,08,3,35.0,1,0.50,1,07.0
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: 00.50,04.50,10.0,08,3,35.0,1,0.50,1,07.0
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+ESP32: Testing actual update rate...
+STM32: 00:06:23.100 (I) (detector_distance) Detector Distance Config
+STM32: 00:06:23.100 (I) (detector_distance) start_m: 0.500000
+STM32: 00:06:23.101 (I) (detector_distance) end_m: 4.500000
+STM32: 00:06:23.102 (I) (detector_distance) max_step_length: 8
+STM32: 00:06:23.103 (I) (detector_distance) max_profile: PROFILE_3
+STM32: 00:06:23.104 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:06:23.105 (I) (detector_distance) signal_quality: 35.000000
+STM32: 00:06:23.106 (I) (detector_distance) threshold_method: C00:06:23.111 (I) (de00:06:23.112 (I) (detector_distance) Off00:06:23.11
+STM32: 7 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:06:23.118 (I) (con00:06:23.125 (I) (config)     enable_loopback  : true
+STM32: 00:06:23.00:06:23.131 (I) (config) double_buffering: false
+STM32: 00:06:23.132 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:06:23.133 (I)00:06:23.142 (I) (config)00:06:23.143 (I) (co00:06:23.147 (I) (config) 00:06:23.148 (I) (config)     phase_enha
+STM32: ncement: 00:06:23.155 (I) (config)     receiver_gain    : hu
+STM32: 00:06:200:06:23.160 (I) (config)     start_p00:06:23.161 (I) (config00:06:23.166 (I) (config)     profile          : PROFILE_3
+STM32: 00:06:23.167 (I) (config)     prf              : 15.6MHz
+STM32: 00:06:23.1600:06:23.178 (I) (config)     receiver_gain    : hu
+STM32: 00:06:23.00:06:23.184 (I) 00:06:23.184 (I) (config)     num_points       : 89
+STM32: 00:06:23.185 (I) (config)     step_length      : 8
+STM32: 00:06:200:06:23.196 (I) (config)     enable_tx        : true
+STM32: 00:00:06:23.201 (I) (config)     num_points       : 83
+STM32: 00:06:23.2000:06:23.208 (I) (config)     prf              : 15.6MHz
+STM32: [24/11/15 14:01:07.177] 3.082 m, 7.08
+STM32: [24/11/15 14:01:07.293] 3.100 m, 8.59
+STM32: [24/11/15 14:01:07.408] 3.092 m, 13.80
+STM32: M814
+STM32: [24/11/15 14:01:07.524] 3.105 m, 15.58
+STM32: [24/11/15 14:01:07.640] 3.095 m, 14.28
+STM32: [24/11/15 14:01:07.755] 3.107 m, 15.27
+STM32: [24/11/15 14:01:07.871] 3.148 m, 6.23
+STM32: [24/11/15 14:01:07.987] 3.120 m, 11.65
+STM32: [24/11/15 14:01:08.102] 3.086 m, 7.06
+STM32: [24/11/15 14:01:08.218] 3.094 m, 18.73
+STM32: [24/11/15 14:01:08.334] 3.100 m, 16.19
+STM32: [24/11/15 14:01:08.449] 3.122 m, 15.69
+STM32: [24/11/15 14:01:08.565] 3.120 m, 13.93
+STM32: [24/11/15 14:01:08.681] 3.108 m, 19.85
+STM32: [24/11/15 14:01:08.796] 3.095 m, 8.68
+STM32: [24/11/15 14:01:08.912] 3.102 m, 13.35
+STM32: [24/11/15 14:01:09.027] 3.118 m, -3.95
+STM32: [24/11/15 14:01:09.143] 3.092 m, 5.31
+STM32: [24/11/15 14:01:09.259] 3.150 m, 1.83
+STM32: [24/11/15 14:01:09.374] 3.106 m, 14.19
+STM32: [24/11/15 14:01:09.490] 3.098 m, 11.56
+STM32: [24/11/15 14:01:09.606] 3.157 m, 7.20
+STM32: [24/11/15 14:01:09.721] 3.117 m, 14.95
+STM32: [24/11/15 14:01:09.837] 3.116 m, 3.08
+STM32: [24/11/15 14:01:09.953] 3.075 m, 4.83
+STM32: [24/11/15 14:01:10.068] 3.119 m, 12.04
+STM32: [24/11/15 14:01:10.184] 3.088 m, 8.77
+STM32: [24/11/15 14:01:10.299] 3.108 m, 14.29
+STM32: [24/11/15 14:01:10.415] 3.113 m, 15.77
+STM32: [24/11/15 14:01:10.531] 3.158 m, 14.88
+STM32: [24/11/15 14:01:10.646] 3.150 m, 6.54
+STM32: [24/11/15 14:01:10.762] 3.105 m, 19.37
+STM32: [24/11/15 14:01:10.878] 3.112 m, 15.25
+STM32: [24/11/15 14:01:10.993] 3.108 m, 20.23
+STM32: [24/11/15 14:01:11.109] 3.115 m, 14.85
+STM32: [24/11/15 14:01:11.225] 3.195 m, -2.81
+STM32: [24/11/15 14:01:11.340] 3.075 m, 6.72
+STM32: [24/11/15 14:01:11.456] 3.104 m, 18.12
+STM32: [24/11/15 14:01:11.572] 3.081 m, 10.22
+STM32: [24/11/15 14:01:11.687] 3.085 m, 2.28
+STM32: [24/11/15 14:01:11.803] 3.106 m, 8.46
+STM32: [24/11/15 14:01:11.918] 3.107 m, 16.26
+STM32: [24/11/15 14:01:12.034] 3.115 m, 9.46
+STM32: [24/11/15 14:01:12.150] 3.118 m, 16.22
+STM32: M815
+STM32: 41
+ESP32: Actual update rate measured as 8.6 Hz.
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 10.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 08 (20.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 35.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 08.6 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: u
+ESP32: 
+ESP32: Set the update rate. Current value: 10.0 Hz
+ESP32: Format: XX.X
+ESP32:  Input must match format exactly. Enter leading and trailing zeros as appropriate.
+ESP32:  Value must be between 00.1 and 10.5, inclusive.
+ESP32:  Units are in Hertz.
+ESP32: Notes:
+ESP32:  Keep as low as is required. Greatly affects power consumption.
+ESP32: Example:
+ESP32:  A measurement is required every 0.2 seconds.
+ESP32:  Update rate should be set to 5 Hz.
+ESP32:  User would enter "05.0" into terminal with no quotes.
+ESP32: 
+Input: 08.0
+ESP32: 
+ESP32: WARNING: Actual update rate may be lower than desired.
+ESP32: Test true update rate in configuration menu.
+ESP32: 
+ESP32: Update rate set to 08.0 Hz
+ESP32: Is this the desired value? Type Y for yes, any other character for no.
+ESP32: 
+Input: y
+ESP32: 
+ESP32: Value saved.
+ESP32: 
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 08.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 08 (20.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 35.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 08.6 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: a
+ESP32: 
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,04.50,08.0,08,3,35.0,1,0.50,1,08.6
+ESP32: Received from STM32: 00.50,04.50,08.0,08,3,35.0,1,0.50,1,08.6
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+ESP32: Testing actual update rate...
+STM32: 00:07:11.282 (I) (detector_distance) Detector Distance Config
+STM32: 00:07:11.282 (I) (detector_distance) start_m: 0.500000
+STM32: 00:07:11.283 (I) (detector_distance) end_m: 4.500000
+STM32: 00:07:11.284 (I) (detector_distance) max_step_length: 8
+STM32: 00:07:11.285 (I) (detector_distance) max_profile: PROFILE_3
+STM32: 00:07:11.286 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:07:11.287 (I) (detector_distance) signal_quality: 35.000000
+STM32: 00:07:11.288 (I) (detector_distance) threshold_method: C00:07:11.293 (I) (d00:07:11.294 (I) (detector_distance) Offs00:07:11.29
+STM32: 9 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:07:11.300 (I) (con00:07:11.307 (I) (config)     enable_loopback  : true
+STM32: 00:07:11.00:07:11.313 (I) (config) double_buffering: false
+STM32: 00:07:11.314 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:07:11.315 (I)00:07:11.324 (I) (config)00:07:11.325 (I) (co00:07:11.329 (I) (config)  00:07:11.330 (I) (config)     phase_enh
+STM32: ancement:00:07:11.337 (I) (config)     receiver_gain    : hu
+STM32: 00:07:100:07:11.342 (I) (config)     start_p00:07:11.343 (I) (config00:07:11.348 (I) (config)     profile          : PROFILE_3
+STM32: 00:07:11.349 (I) (config)     prf              : 15.6MHz
+STM32: 00:07:11.3500:07:11.360 (I) (config)     receiver_gain    : hu
+STM32: 00:07:11.00:07:11.366 (I) 00:07:11.366 (I) (config)     num_points       : 89
+STM32: 00:07:11.367 (I) (config)     step_length      : 8
+STM32: 00:07:100:07:11.378 (I) (config)     enable_tx        : true
+STM32: 00:00:07:11.383 (I) (config)     num_points       : 83
+STM32: 00:07:11.3800:07:11.390 (I) (config)     prf              : 15.6MHz
+STM32: [24/11/15 14:01:55.396] 3.160 m, 7.17
+STM32: [24/11/15 14:01:55.511] 3.142 m, 13.06
+STM32: [24/11/15 14:01:55.627] 3.143 m, 9.09
+STM32: M814
+STM32: [24/11/15 14:01:55.743] 3.202 m, -0.53
+STM32: [24/11/15 14:01:55.858] 3.129 m, 11.91
+STM32: [24/11/15 14:01:55.974] 3.116 m, 13.14
+STM32: [24/11/15 14:01:56.089] 3.100 m, 2.63
+STM32: [24/11/15 14:01:56.205] 3.131 m, 13.08
+STM32: [24/11/15 14:01:56.321] 3.125 m, 19.11
+STM32: [24/11/15 14:01:56.436] 3.135 m, 12.75
+STM32: [24/11/15 14:01:56.552] 3.139 m, 17.04
+STM32: [24/11/15 14:01:56.668] 3.161 m, 4.47
+STM32: [24/11/15 14:01:56.783] 3.120 m, 12.78
+STM32: [24/11/15 14:01:56.899] 3.130 m, 8.40
+STM32: [24/11/15 14:01:57.019] 3.104 m, 11.62
+STM32: [24/11/15 14:01:57.144] 3.138 m, 14.71
+STM32: [24/11/15 14:01:57.269] 3.125 m, 19.16
+STM32: [24/11/15 14:01:57.394] 3.130 m, 18.85
+STM32: [24/11/15 14:01:57.519] 3.129 m, 7.27
+STM32: [24/11/15 14:01:57.643] 3.068 m, 4.43
+STM32: [24/11/15 14:01:57.768] 3.133 m, 17.95
+STM32: [24/11/15 14:01:57.893] 3.124 m, 14.60
+STM32: [24/11/15 14:01:58.018] 3.126 m, 16.83
+STM32: [24/11/15 14:01:58.143] 3.121 m, 21.98
+STM32: [24/11/15 14:01:58.268] 3.128 m, 18.38
+STM32: [24/11/15 14:01:58.392] 3.150 m, 6.49
+STM32: [24/11/15 14:01:58.517] 3.128 m, 17.36
+STM32: [24/11/15 14:01:58.642] 3.140 m, 18.51
+STM32: [24/11/15 14:01:58.767] 3.132 m, 16.67
+STM32: [24/11/15 14:01:58.892] 3.120 m, 15.96
+STM32: [24/11/15 14:01:59.017] 3.122 m, 11.37
+STM32: [24/11/15 14:01:59.141] 3.120 m, 22.18
+STM32: [24/11/15 14:01:59.266] 3.124 m, 15.58
+STM32: [24/11/15 14:01:59.391] 3.125 m, 12.28
+STM32: [24/11/15 14:01:59.516] 3.135 m, 12.22
+STM32: [24/11/15 14:01:59.641] 3.135 m, 13.44
+STM32: [24/11/15 14:01:59.766] 3.136 m, 22.00
+STM32: [24/11/15 14:01:59.890] 3.126 m, 19.45
+STM32: [24/11/15 14:02:00.015] 3.117 m, 5.18
+STM32: [24/11/15 14:02:00.140] 3.150 m, -3.91
+STM32: [24/11/15 14:02:00.265] 3.116 m, 7.80
+STM32: [24/11/15 14:02:00.390] 3.128 m, 23.27
+STM32: M815
+STM32: 39
+ESP32: Actual update rate measured as 8.2 Hz.
+ESP32: --- CONFIGURATION MENU ---
+ESP32: Send one of the below characters to change that configuration setting.
+ESP32: Changes will be saved upon exiting menu.
+ESP32: S: Change the start of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 00.50 m
+ESP32: E: Change the end of the measurement range. Affects power consumption and update rate.
+ESP32:    Current value: 04.50 m
+ESP32: U: Change the update rate. Affects power consumption.
+ESP32:    Current value: 08.0 Hz
+ESP32: L: Change the maximum step length of the measurements. Affects power consumption, update rate, and resolution.
+ESP32:    Current value: 08 (20.0 mm)
+ESP32: P: Change the maximum measurement profile. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 3
+ESP32: Q: Change the signal quality. Affects power consumption, update rate, and accuracy.
+ESP32:    Current value: 35.0
+ESP32: R: Change the reflector shape.
+ESP32:    Current value: 1 (0: generic, 1: planar)
+ESP32: T: Change the threshold sensitivity. Affects accuracy.
+ESP32:    Current value: 0.50
+ESP32: W: Set the text width for the Bluetooth UART output.
+ESP32:    Current value: 041 characters
+ESP32: A: Measure the actual update rate.
+ESP32:    True update rate: 08.2 Hz
+ESP32: B: Print to Bluetooth in serial plotter mode for two minutes.
+ESP32:    Useful for tuning settings with visual indicators.
+ESP32:    Recommended to use Arduino IDE serial plotter.
+ESP32: X: Exit the menu.
+ESP32: 
+Input: x
+ESP32: 
+ESP32: Send any character to re-open configuration menu.
+ESP32: 
+ESP32: New config file saved
+ESP32: Configuration saved to SD card. Returning to normal operations.
+ESP32: 
+ESP32: Sending config to STM...
+ESP32: Sent from ESP32:     00.50,04.50,08.0,08,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: M807
+ESP32: Received from STM32: 00.50,04.50,08.0,08,3,35.0,1,0.50,0,08.2
+ESP32: Received from STM32: M808
+STM32: Configuration received and loaded onto radar sensor.
+STM32: 
+STM32: 00:07:52.382 (I) (detector_distance) Detector Distance Config
+STM32: 00:07:52.382 (I) (detector_distance) start_m: 0.500000
+STM32: 00:07:52.383 (I) (detector_distance) end_m: 4.500000
+STM32: 00:07:52.384 (I) (detector_distance) max_step_length: 8
+STM32: 00:07:52.385 (I) (detector_distance) max_profile: PROFILE_3
+STM32: 00:07:52.386 (I) (detector_distance) close_range_leakage_cancellation: false
+STM32: 00:07:52.387 (I) (detector_distance) signal_quality: 35.000000
+STM32: 00:07:52.388 (I) (detector_distance) threshold_method: C00:07:52.393 (I) (de00:07:52.394 (I) (detector_distance) Off00:07:52.39
+STM32: 9 (I) (config) inter_sweep_idle_state: READY
+STM32: 00:07:52.400 (I) (con00:07:52.407 (I) (config)     enable_loopback  : true
+STM32: 00:07:52.00:07:52.413 (I) (config) double_buffering: false
+STM32: 00:07:52.414 (I) (config) inter_frame_idle_state: DEEP_SLEEP
+STM32: 00:07:52.415 (I)00:07:52.424 (I) (confi00:07:52.425 (I) (conf00:07:52.429 (I) (config)00:07:52.430 (I) (config)     phase_enhan
+STM32: cement: t00:07:52.437 (I) (config)     receiver_gain    : hu
+STM32: 00:07:500:07:52.442 (I) (config)     start_00:07:52.443 (I) (config)00:07:52.448 (I) (config)     profile          : PROFILE_3
+STM32: 00:07:52.449 (I) (config)     prf              : 15.6MHz
+STM32: 00:07:52.4500:07:52.460 (I) (config)     receiver_gain    : hu
+STM32: 00:07:52.00:07:52.466 (I)00:07:52.466 (I) (config)     num_points       : 89
+STM32: 00:07:52.467 (I) (config)     step_length      : 8
+STM32: 00:07:5200:07:52.478 (I) (config)     enable_tx        : true
+STM32: 00:00:07:52.483 (I) (config)     num_points       : 83
+STM32: 00:07:52.4800:07:52.490 (I) (config)     prf              : 15.6MHz
+STM32: M114
+STM32: DATA_START
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- NEW DATA ---------- ---------- ---------- ----------
+ESP32: ---------- ---------- ---------- ---------- -------- ---------- ---------- ---------- ----------
+ESP32: First Data File Since Powering On: False
+ESP32: Data File: /DATA/24-11-15_14-02-34_data.txt
+ESP32: Start Time: [24/11/15 14:02:36.611]
+ESP32: Location: 36°48'09.25"N 121°47'12.36"W
+ESP32: Elevation: 12.4 m
+ESP32: Start of range: 0.50 m
+ESP32: End of range: 4.50 m
+ESP32: Update rate: 8.0 Hz
+ESP32: Maximum step length: 8 (20.0 mm)
+ESP32: Maximum profile: 3
+ESP32: Signal quality: 35.0
+ESP32: Reflector shape: 1 (0: generic, 1: planar)
+ESP32: Threshold sensitivity: 0.50
+ESP32: True update rate: 8.2 Hz
+ESP32: Text width: 41 characters
+ESP32: ---
+ESP32: GPS POWERON
+ESP32: Time: 14:54:49 PST
+ESP32: Location: 36°48'09.25"N 121°47'12.25"W
+ESP32: Elevation: 10.4 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 14:54:50
+ESP32: New RTC time: 24/11/15 14:54:49
+ESP32: GPS POWERON
+ESP32: Time: 15:54:57 PST
+ESP32: Location: 36°48'09.25"N 121°47'12.36"W
+ESP32: Elevation: 8.8 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 15:54:58
+ESP32: New RTC time: 24/11/15 15:54:57
+ESP32: GPS POWERON
+ESP32: Time: 16:55:13 PST
+ESP32: Location: 36°48'09.23"N 121°47'12.25"W
+ESP32: Elevation: 7.4 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 16:55:12
+ESP32: New RTC time: 24/11/15 16:55:13
+ESP32: GPS POWERON
+ESP32: Time: 17:54:50 PST
+ESP32: Location: 36°48'09.13"N 121°47'12.19"W
+ESP32: Elevation: 8.6 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 17:54:51
+ESP32: New RTC time: 24/11/15 17:54:50
+STM32: M
+ESP32: GPS POWERON
+ESP32: Time: 18:54:49 PST
+ESP32: Location: 36°48'09.18"N 121°47'12.30"W
+ESP32: Elevation: 3.5 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: M1
+STM32: &�`
+STM32: M
+STM32: M
+ESP32: GPS POWERON
+ESP32: Time: 19:55:12 PST
+ESP32: Location: 36°48'09.16"N 121°47'12.36"W
+ESP32: Elevation: -1.5 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+ESP32: RTC synchronized with GPS time:
+ESP32: Old RTC time: 24/11/15 19:55:13
+ESP32: New RTC time: 24/11/15 19:55:12
+ESP32: GPS POWERON
+ESP32: Time: 20:54:50 PST
+ESP32: Location: 36°48'09.13"N 121°47'12.25"W
+ESP32: Elevation: 0.0 m
+ESP32: New config file saved
+ESP32: GPS POWEROFF
+STM32: M1

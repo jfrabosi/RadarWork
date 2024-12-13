@@ -5,7 +5,10 @@
 #include "communication/BluetoothManager.h"
 #include "communication/GPSManager.h"
 #include "storage/SDCardManager.h"
+#include "storage/TimeManager.h"
+#include "communication/RadarManager.h"
 #include "RTClib.h"
+#include "driver/uart.h"
 
 #define DEVICE_NAME "ESP32_HUZZAH32"
 #define LED_PIN LED_BUILTIN
@@ -13,22 +16,22 @@
 #define GPS_TX_PIN 14
 #define GPS_POWER_PIN 15
 #define CHIP_SELECT_PIN 33
+#define RADAR_RX_PIN 16
+#define RADAR_TX_PIN 17
 
 // Function declarations
-void createInitialFiles();
-void logTimestampedData();
 
 // Global file path pointers
 char *debugFilePath = nullptr;
 char *dataFilePath = nullptr;
 
 RTC_PCF8523 rtc; // Create RTC object
-int32_t counter = 0;
 
 void setup()
 {
   Serial.begin(115200);
 
+  // set up RTC
   if (!rtc.begin())
   {
     Serial.println("Couldn't find RTC");
@@ -37,29 +40,76 @@ void setup()
       delay(10);
   }
 
-  if (!rtc.initialized() || rtc.lostPower())
+  // initialize managers
+  if (!TimeManager::getInstance().initialize(rtc))
   {
-    Serial.println("RTC is NOT initialized, setting time!");
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    Serial.println("Time Manager initialization failed!");
+    while (1)
+      delay(10);
   }
 
-  // Initialize managers
+  if (!SDCardManager::getInstance().initialize(CHIP_SELECT_PIN, rtc))
+  {
+    Serial.println("SD Card initialization failed!");
+    while (1)
+      delay(10);
+  }
+
+  // Get current configuration
+  ConfigSettings currentConfig = SDCardManager::getInstance().getConfig();
+
+  // Update the update rate
+  currentConfig.update_rate = 10.0f;
+  currentConfig.start_m = 1.0f;
+  currentConfig.end_m = 2.50f;
+  currentConfig.max_step_length = 0;
+
+  // Save the modified configuration
+  SDCardManager::getInstance().updateConfig(currentConfig);
+
   BluetoothManager::getInstance().initialize(DEVICE_NAME, LED_PIN);
-  Serial.println("Bluetooth initialized");
 
   GPSManager::getInstance().initialize(GPS_RX_PIN, GPS_TX_PIN, GPS_POWER_PIN, rtc);
-  Serial.println("GPS initialized and powered on");
 
-  // if (!SDCardManager::getInstance().initialize(CHIP_SELECT_PIN, rtc))
-  // {
-  //   Serial.println("SD Card initialization failed!");
-  //   while (1)
-  //     delay(10);
-  // }
-  // Serial.println("SD Card initialized");
+  // Initialize RadarManager
+  if (!RadarManager::getInstance().initialize(RADAR_RX_PIN, RADAR_TX_PIN))
+  {
+    Serial.println("Radar initialization failed!");
+    while (1)
+      delay(10);
+  }
 
-  // // Create initial log files
-  // createInitialFiles();
+  // Configure sleep parameters
+  esp_sleep_enable_uart_wakeup(UART_NUM_2); // Wake on STM32 UART
+  esp_sleep_enable_timer_wakeup(100000);    // Wake every 100ms to check tasks
+
+  // Configure UART for wake capability
+  uart_set_wakeup_threshold(UART_NUM_2, 3); // Wake after 3 bytes received
+
+  // // Set initial date/time - for December 11, 2024
+  // TimeManager::getInstance().setDateTime(
+  //     2024, // year
+  //     12,   // month (December)
+  //     11,   // day
+  //     1,    // hour (midnight UTC)
+  //     0,    // minute
+  //     0     // second
+  // );
+  // Serial.println("Time Manager initialized and date set");
+
+  // Create SD Card task
+  xTaskCreatePinnedToCore(
+      [](void *parameter)
+      {
+        SDCardManager::getInstance().sdTask();
+      },
+      "sd_card_task",
+      4096,    // Stack size
+      nullptr, // Parameters
+      3,       // Priority
+      nullptr, // Task handle
+      0        // Core ID (same as GPS)
+  );
 
   // Create Bluetooth task
   xTaskCreatePinnedToCore(
@@ -84,66 +134,66 @@ void setup()
       "gps_task",
       4096,    // Stack size
       nullptr, // Parameters
-      1,       // Priority
+      2,       // Priority
       nullptr, // Task handle
       1        // Core ID
   );
 
-  Serial.println("Setup complete");
+  // Create Radar task - high priority since timing is critical
+  xTaskCreatePinnedToCore(
+      [](void *parameter)
+      {
+        RadarManager::getInstance().radarTask();
+      },
+      "radar_task",
+      4096,    // Stack size
+      nullptr, // Parameters
+      3,       // Priority (highest)
+      nullptr, // Task handle
+      1        // Core ID (same core as GPS)
+  );
 }
 
 void loop()
 {
-  BluetoothManager::getInstance().sendMessageSTM32("Decaseconds since start: %i", counter);
-  counter++;
-  vTaskDelay(pdMS_TO_TICKS(10000));
-}
+  // Check if we can sleep
+  bool canSleep = true;
 
-void createInitialFiles()
-{
-  // Create new debug file
-  if (!SDCardManager::getInstance().startNewDebugFile(&debugFilePath))
+  // Don't sleep if BT is active
+  if (BluetoothManager::getInstance().isEnabled())
   {
-    Serial.println("Failed to create debug file!");
-    return;
+    canSleep = false;
   }
-  Serial.printf("Created debug file: %s\n", debugFilePath);
 
-  // Create new data file
-  if (!SDCardManager::getInstance().startNewDataFile(&dataFilePath))
+  // Don't sleep if GPS is active
+  if (GPSManager::getInstance().isEnabled())
   {
-    Serial.println("Failed to create data file!");
-    return;
+    canSleep = false;
   }
-  Serial.printf("Created data file: %s\n", dataFilePath);
 
-  // Write initial header to data file
-  DateTime now = rtc.now();
-  SDCardManager::getInstance().appendData("First Data File Since Powering On: True");
-  SDCardManager::getInstance().appendData("Data File: %s", dataFilePath);
-  SDCardManager::getInstance().appendData("Start Time: [%02d/%02d/%02d %02d:%02d:%02d.%03u]",
-                                          now.year() % 100, now.month(), now.day(),
-                                          now.hour(), now.minute(), now.second(),
-                                          (millis() % 1000));
-  SDCardManager::getInstance().appendData("Location: Not Set Not Set");
-  SDCardManager::getInstance().appendData("Elevation: Not Set");
-  SDCardManager::getInstance().appendData("---");
-  SDCardManager::getInstance().flushDataBuffer(); // Force write to SD card
-}
-
-void logTimestampedData()
-{
-  static uint32_t lastLogTime = 0;
-  const uint32_t LOG_INTERVAL = 1000; // Log every second
-
-  if (millis() - lastLogTime >= LOG_INTERVAL)
+  // Don't sleep if radar is testing or in middle of measurement
+  if (RadarManager::getInstance().isTesting() ||
+      RadarManager::getInstance().isMeasuring())
   {
-    DateTime now = rtc.now();
-    SDCardManager::getInstance().appendData("[%02d/%02d/%02d %02d:%02d:%02d.%03u] 0.0m",
-                                            now.year() % 100, now.month(), now.day(),
-                                            now.hour(), now.minute(), now.second(),
-                                            (millis() % 1000));
-    lastLogTime = millis();
-    Serial.println("Appended to data!");
+    canSleep = false;
   }
+
+  // Don't sleep if SD card has pending operations
+  if (SDCardManager::getInstance().hasPendingOperations())
+  {
+    canSleep = false;
+  }
+
+  if (canSleep)
+  {
+    // Before sleeping, ensure all SD card buffers are flushed
+    SDCardManager::getInstance().flushDebugBuffer();
+    SDCardManager::getInstance().flushDataBuffer();
+
+    // Enter light sleep
+    int64_t sleep_time = esp_light_sleep_start();
+  }
+
+  // Regular task processing
+  vTaskDelay(pdMS_TO_TICKS(1));
 }

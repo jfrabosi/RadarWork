@@ -1,0 +1,31 @@
+ESP32: Loaded config file.
+ESP32: Configuration loaded from SD card.
+ESP32: Loaded previous GPS coordinates: 36°48'09.27"N 121°47'12.41"W
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+ESP32: GPS: $GPGGA,,,,,,0,00,99.99,,,,,,*48
+ESP32: GPS: $GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+ESP32: GPS: $GPGSV,1,1,00*79
+ESP32: GPS: $GPGLL,,,,,,V,N*64
+ESP32: GPS: $GPTXT,01,01,02,ANTSTATUS=INIT*25
+ESP32: GPS: $GPRMC,,V,,,,,,,,,,N*53
+ESP32: GPS: $GPVTG,,,,,,,,,N*30
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: M918
+ESP32: ERROR: Radar stopped, M-code received outside of stop_radar().
+STM32: Error: TX pulled low without reply.
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON
+ESP32: GPS POWERON

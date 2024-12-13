@@ -1,0 +1,16 @@
+First Data File Since Powering On: True
+Data File: /DATA/24-12-02_16-43-41_data.txt
+Start Time: [24/12/02 16:43:42.541]
+Location: 36°48'09.27"N 121°47'12.41"W
+Elevation: 6.5
+Start of range: 0.50 m
+End of range: 1.50 m
+Update rate: 0.5 Hz
+Maximum step length: 4 (10.0 mm)
+Maximum profile: 3
+Signal quality: 35.0
+Reflector shape: 1 (0: generic, 1: planar)
+Threshold sensitivity: 0.50
+True update rate: 8.2 Hz
+Text width: 41 characters
+---

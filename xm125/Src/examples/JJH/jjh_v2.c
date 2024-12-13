@@ -8,10 +8,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
-//#include <ctype.h>
-//#include <math.h>
-//#include <stdarg.h>
 
 #include "acc_definitions_a121.h"
 #include "acc_definitions_common.h"
@@ -74,12 +72,34 @@ typedef enum
   CONFIG_EXIT
 } config_settings_names_t;
 
+// Protocol Header Bytes
+#define RADAR_HEADER_BYTE1 0x4F
+#define RADAR_HEADER_BYTE2 0x3A
+
+// Command Codes
+#define RADAR_CMD_REQUEST_CONFIG 0x3F
+#define RADAR_CMD_CONFIG_GOOD 0x3E
+#define RADAR_CMD_CONFIG_BAD 0x3C
+#define RADAR_CMD_START_DATA 0x5B
+#define RADAR_CMD_NEW_DATA 0x2A
+#define RADAR_CMD_START_TEST 0x54
+#define RADAR_CMD_END_TEST 0x74
+#define RADAR_CMD_NOISE_ON 0x42
+#define RADAR_CMD_NOISE_OFF 0x62
+#define RADAR_CMD_STOP_REQUEST 0x58
+#define RADAR_CMD_STOP_CONFIRM 0x78
+#define RADAR_CMD_CONFIG_STRING 0x24
+#define RADAR_CMD_DEBUG_MSG 0x21
+
+// Constants
 #define SENSOR_ID (1U)
 #define SENSOR_TIMEOUT_MS (2000U)
 #define DEFAULT_UPDATE_RATE (3.0f)
 #define MAX_BUFFER_SIZE 64
-#define HAL_GETTICK_SCALAR 1.00f //1.56f
-#define MAX_MSG_LENGTH 10000
+#define HAL_GETTICK_SCALAR 1.00f
+#define MAX_DISTANCES 5
+#define CONFIG_TIMEOUT_MS 1000
+#define DEBUG_MSG_MAX_LEN 256
 
 typedef struct
 {
@@ -160,6 +180,9 @@ HAL_StatusTypeDef send_esp32_serial(const uint8_t *message, uint16_t msg_length)
 void send_esp32_serial_byte(uint8_t byte);
 
 
+static void debug_print(const char *format, ...);
+
+
 int acconeer_main_JJH_V2(int argc, char *argv[]);
 
 
@@ -176,8 +199,17 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
   uint32_t testTime = 1000;
   uint8_t state = 0;
 
-  printf("--- INITIALIZATION ---\n");
-  printf("Acconeer software version %s\n", acc_version_get());
+  HAL_Delay(15000);
+
+//  while (true){
+//    send_esp32_serial_byte(0x7C);
+//    HAL_Delay(1000);
+//    debug_print("blah blah blah");
+//    HAL_Delay(1000);
+//  }
+
+  debug_print("--- INITIALIZATION ---\n");
+  debug_print("Acconeer software version %s\n", acc_version_get());
 
   const acc_hal_a121_t *hal = acc_hal_rss_integration_get_implementation();
 
@@ -189,7 +221,7 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
   resources.config = acc_detector_distance_config_create();
   if (resources.config == NULL)
   {
-    printf("acc_detector_distance_config_create() failed\n");
+    debug_print("acc_detector_distance_config_create() failed\n");
     cleanup(&resources);
     return EXIT_FAILURE;
   }
@@ -213,7 +245,7 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
         resources.config = acc_detector_distance_config_create();
         if (resources.config == NULL)
         {
-          printf("!acc_detector_distance_config_create() failed\n");
+          debug_print("!acc_detector_distance_config_create() failed\n");
           cleanup(&resources);
           return EXIT_FAILURE;
         }
@@ -227,7 +259,7 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
 
       if (!initialize_detector_resources(&resources))
       {
-        printf("Initializing detector resources failed\n");
+        debug_print("Initializing detector resources failed\n");
         cleanup(&resources);
         return EXIT_FAILURE;
       }
@@ -244,21 +276,21 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
       resources.sensor = acc_sensor_create(SENSOR_ID);
       if (resources.sensor == NULL)
       {
-        printf("acc_sensor_create() failed\n");
+        debug_print("acc_sensor_create() failed\n");
         cleanup(&resources);
         return EXIT_FAILURE;
       }
 
       if (!do_sensor_calibration(resources.sensor, &sensor_cal_result, resources.buffer, resources.buffer_size))
       {
-        printf("Sensor calibration failed\n");
+        debug_print("Sensor calibration failed\n");
         cleanup(&resources);
         return EXIT_FAILURE;
       }
 
       if (!do_full_detector_calibration(&resources, &sensor_cal_result))
       {
-        printf("Detector calibration failed\n");
+        debug_print("Detector calibration failed\n");
         cleanup(&resources);
         return EXIT_FAILURE;
       }
@@ -274,20 +306,21 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
       }
       // start data collection
       else{
-        send_esp32_serial_byte(0x5B);
+        send_esp32_serial_byte(RADAR_CMD_START_DATA);
         state = 3;
       }
     }
 
-    // ---------------- STATE 2: TEST UPDATE RATE ----------------
-    else if (state == 2){
+    // ---------------- STATE 2/3: DATA COLLECTION/TESTING ----------------
+    else if (state == 2 || state == 3)
+    {
       while (!change_config)
       {
         acc_detector_distance_result_t result = { 0 };
 
         if (!do_detector_get_next(&resources, &sensor_cal_result, &result))
         {
-          printf("Could not get next result\n");
+          debug_print("Could not get next result\n");
           cleanup(&resources);
           return EXIT_FAILURE;
         }
@@ -295,11 +328,11 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
         /* If "calibration needed" is indicated, the sensor needs to be recalibrated and the detector calibration updated */
         if (result.calibration_needed)
         {
-          printf("Sensor recalibration and detector calibration update needed ... \n");
+          debug_print("Sensor recalibration and detector calibration update needed ... \n");
 
           if (!do_sensor_calibration(resources.sensor, &sensor_cal_result, resources.buffer, resources.buffer_size))
           {
-            printf("Sensor calibration failed\n");
+            debug_print("Sensor calibration failed\n");
             cleanup(&resources);
             return EXIT_FAILURE;
           }
@@ -307,106 +340,54 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
           /* Once the sensor is recalibrated, the detector calibration should be updated and measuring can continue. */
           if (!do_detector_calibration_update(&resources, &sensor_cal_result))
           {
-            printf("Detector calibration update failed\n");
+            debug_print("Detector calibration update failed\n");
             cleanup(&resources);
             return EXIT_FAILURE;
           }
 
-          printf("Sensor recalibration and detector calibration update done!\n");
+          debug_print("Sensor recalibration and detector calibration update done!\n");
         }
-
         else
         {
           acc_hal_integration_sensor_disable(SENSOR_ID);
           print_distance_result(&result);
-          send_esp32_serial_byte(0x42);
+          send_esp32_serial_byte(RADAR_CMD_NOISE_ON);
           acc_integration_sleep_until_periodic_wakeup();
-          send_esp32_serial_byte(0x62);
+          send_esp32_serial_byte(RADAR_CMD_NOISE_OFF);
           acc_hal_integration_sensor_enable(SENSOR_ID);
         }
 
-        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_RESET){
-          send_esp32_serial_byte(0x5D);
-          int timeout = (int) (3.0f / current_config.update_rate);
-          if (wait_for_command(0x58, 0x78, 4 + timeout)) {
+        // Handle testing mode specific logic
+        if (state == 2)
+        {
+          update_counter++;
+          if (update_counter == 0)
+          {
+            send_esp32_serial_byte(RADAR_CMD_START_TEST);
+          }
+          if (update_counter >= 250 || (HAL_GetTick() - startTime) >= testTime)
+          {
+            current_config.testing_update_rate = false;
+            change_config = true;
+            state = 1;
+            uint8_t msg[] = {RADAR_CMD_END_TEST, (uint8_t)update_counter};
+            send_esp32_serial(msg, 2);
+            HAL_Delay(100);
+            continue;
+          }
+        }
+
+        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_RESET)
+        {
+          int timeout = (int)(3.0f / current_config.update_rate);
+          if (wait_for_command(RADAR_CMD_STOP_REQUEST, RADAR_CMD_STOP_CONFIRM, 4 + timeout))
+          {
             change_config = true;
             state = 1;
           }
-          else{
-            printf("\nError: TX pulled low without reply.\n");
-          }
-        }
-
-        update_counter++;
-        if (update_counter == 0){
-          send_esp32_serial_byte(0x54);
-        }
-        if (update_counter >= 250 || (HAL_GetTick() - startTime) >= testTime){
-          current_config.testing_update_rate = false;
-          change_config = true;
-          state = 1;
-          uint8_t msg[] = {0x74, (uint8_t)update_counter};
-          send_esp32_serial(msg, 2);
-          HAL_Delay(100);
-        }
-      }
-    }
-
-    // ---------------- STATE 3: DATA COLLECTION ----------------
-    else if (state == 3){
-      while (!change_config)
-      {
-        acc_detector_distance_result_t result = { 0 };
-
-        if (!do_detector_get_next(&resources, &sensor_cal_result, &result))
-        {
-          printf("Could not get next result\n");
-          cleanup(&resources);
-          return EXIT_FAILURE;
-        }
-
-        /* If "calibration needed" is indicated, the sensor needs to be recalibrated and the detector calibration updated */
-        if (result.calibration_needed)
-        {
-          printf("Sensor recalibration and detector calibration update needed ... \n");
-
-          if (!do_sensor_calibration(resources.sensor, &sensor_cal_result, resources.buffer, resources.buffer_size))
+          else
           {
-            printf("Sensor calibration failed\n");
-            cleanup(&resources);
-            return EXIT_FAILURE;
-          }
-
-          /* Once the sensor is recalibrated, the detector calibration should be updated and measuring can continue. */
-          if (!do_detector_calibration_update(&resources, &sensor_cal_result))
-          {
-            printf("Detector calibration update failed\n");
-            cleanup(&resources);
-            return EXIT_FAILURE;
-          }
-
-          printf("Sensor recalibration and detector calibration update done!\n");
-        }
-
-        else
-        {
-          acc_hal_integration_sensor_disable(SENSOR_ID);
-          print_distance_result(&result);
-          send_esp32_serial_byte(0x42);
-          acc_integration_sleep_until_periodic_wakeup();
-          send_esp32_serial_byte(0x62);
-          acc_hal_integration_sensor_enable(SENSOR_ID);
-        }
-
-        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_RESET){
-          send_esp32_serial_byte(0x5D);
-          int timeout = (int) (3.0f / current_config.update_rate);
-          if (wait_for_command(0x58, 0x78, 4 + timeout)) {
-            change_config = true;
-            state = 1;
-          }
-          else{
-            printf("\nError: TX pulled low without reply.\n");
+            debug_print("\nError: TX pulled low without reply.\n");
           }
         }
       }
@@ -415,7 +396,7 @@ int acconeer_main_JJH_V2(int argc, char *argv[])
 
   cleanup(&resources);
 
-  printf("Done!\n");
+  debug_print("Done!\n");
 
   return EXIT_SUCCESS;
 }
@@ -442,7 +423,7 @@ static bool get_esp32_serial(char *result, uint16_t buf_size)
       }
     }
 
-    // Check for timeout (e.g., 1000ms)
+    // Check for timeout (e.g., 100ms)
     if (HAL_GetTick() - startTime > 100)
     {
       if (received == 0)
@@ -473,13 +454,13 @@ static bool load_config(config_settings_t *config){
   empty_uart_input_buffer();
 
   // request config from ESP32
-  send_esp32_serial_byte(0x3F);
+  send_esp32_serial_byte(RADAR_CMD_REQUEST_CONFIG);
 
-  // should receive 40 + two header + $ (0x24) + null terminator
+  // should receive 40 + two header + $ (RADAR_CMD_CONFIG_STRING) + null terminator
   while (!get_esp32_serial(_received_uart_data, 44)){
-    if ((HAL_GetTick() - startTime) > 1000){
+    if ((HAL_GetTick() - startTime) > CONFIG_TIMEOUT_MS){
       startTime = HAL_GetTick();
-      send_esp32_serial_byte(0x3F);
+      send_esp32_serial_byte(RADAR_CMD_REQUEST_CONFIG);
       empty_uart_input_buffer();
     }
   }
@@ -493,45 +474,45 @@ static bool load_config(config_settings_t *config){
   //   float,   float, float,       int,             int,         float,          int,             float,                 int,                 float
 
   // Skip past the header "O:$" to get to the actual data
-    char *data_start = strchr(_received_uart_data, '$');
-    if (data_start == NULL || strchr(data_start + 1, ',') == NULL) {
-      send_esp32_serial_byte(0x3C);
-      printf("Invalid config format.\n");
-      return false;
-    }
-    data_start++; // Move past the $
-
-    // Parse the data
-    char *token;
-    int field_count = 0;
-
-    token = strtok(data_start, ",");
-    while (token != NULL && field_count < 10) {
-      switch (field_count) {
-        case 0: config->start_m = atof(token); break;
-        case 1: config->end_m = atof(token); break;
-        case 2: config->update_rate = atof(token); break;
-        case 3: config->max_step_length = atoi(token); break;
-        case 4: config->max_profile = atoi(token); break;
-        case 5: config->signal_quality = atof(token); break;
-        case 6: config->reflector_shape = atoi(token); break;
-        case 7: config->threshold_sensitivity = atof(token); break;
-        case 8: config->testing_update_rate = atoi(token); break;
-        case 9: config->true_update_rate = atof(token); break;
-      }
-      token = strtok(NULL, ",");
-      field_count++;
-    }
-
-    if (field_count == 10) {
-      send_esp32_serial_byte(0x3E);
-      return true;
-    }
-
-    send_esp32_serial_byte(0x3C);
-    printf("Invalid config format.\n");
+  char *data_start = strchr(_received_uart_data, RADAR_CMD_CONFIG_STRING);
+  if (data_start == NULL || strchr(data_start + 1, ',') == NULL) {
+    send_esp32_serial_byte(RADAR_CMD_CONFIG_BAD);
+    debug_print("Invalid config format.\n");
     return false;
   }
+  data_start++; // Move past the $
+
+  // Parse the data
+  char *token;
+  int field_count = 0;
+
+  token = strtok(data_start, ",");
+  while (token != NULL && field_count < 10) {
+    switch (field_count) {
+      case 0: config->start_m = atof(token); break;
+      case 1: config->end_m = atof(token); break;
+      case 2: config->update_rate = atof(token); break;
+      case 3: config->max_step_length = atoi(token); break;
+      case 4: config->max_profile = atoi(token); break;
+      case 5: config->signal_quality = atof(token); break;
+      case 6: config->reflector_shape = atoi(token); break;
+      case 7: config->threshold_sensitivity = atof(token); break;
+      case 8: config->testing_update_rate = atoi(token); break;
+      case 9: config->true_update_rate = atof(token); break;
+    }
+    token = strtok(NULL, ",");
+    field_count++;
+  }
+
+  if (field_count == 10) {
+    send_esp32_serial_byte(RADAR_CMD_CONFIG_GOOD);
+    return true;
+  }
+
+  send_esp32_serial_byte(RADAR_CMD_CONFIG_BAD);
+  debug_print("Invalid config format.\n");
+  return false;
+}
 
 
 static bool wait_for_command(uint8_t send, uint8_t receive, int timeout_s) {
@@ -542,7 +523,7 @@ static bool wait_for_command(uint8_t send, uint8_t receive, int timeout_s) {
   while (count < timeout_s) {
     while (!get_esp32_serial((char*)_command_uart, 4)) {
       HAL_Delay(50);
-      if ((HAL_GetTick() - start_time) > 1000) {
+      if ((HAL_GetTick() - start_time) > CONFIG_TIMEOUT_MS) {
         start_time = HAL_GetTick();
         count++;
         if (send != 0) {  // If send byte is not 0
@@ -553,8 +534,8 @@ static bool wait_for_command(uint8_t send, uint8_t receive, int timeout_s) {
 
     // Check if response matches expected format:
     // Header (0x4F 0x3A) + receive byte + null terminator
-    if (_command_uart[0] == 0x4F &&
-      _command_uart[1] == 0x3A &&
+    if (_command_uart[0] == RADAR_HEADER_BYTE1 &&
+      _command_uart[1] == RADAR_HEADER_BYTE2 &&
       _command_uart[2] == receive &&
       _command_uart[3] == 0x00) {
       return true;
@@ -639,27 +620,27 @@ static bool initialize_detector_resources(distance_detector_resources_t *resourc
   resources->handle = acc_detector_distance_create(resources->config);
   if (resources->handle == NULL)
   {
-    printf("acc_detector_distance_create() failed\n");
+    debug_print("acc_detector_distance_create() failed\n");
     return false;
   }
 
   if (!acc_detector_distance_get_sizes(resources->handle, &(resources->buffer_size), &(resources->detector_cal_result_static_size)))
   {
-    printf("acc_detector_distance_get_sizes() failed\n");
+    debug_print("acc_detector_distance_get_sizes() failed\n");
     return false;
   }
 
   resources->buffer = acc_integration_mem_alloc(resources->buffer_size);
   if (resources->buffer == NULL)
   {
-    printf("sensor buffer allocation failed\n");
+    debug_print("sensor buffer allocation failed\n");
     return false;
   }
 
   resources->detector_cal_result_static = acc_integration_mem_alloc(resources->detector_cal_result_static_size);
   if (resources->detector_cal_result_static == NULL)
   {
-    printf("calibration buffer allocation failed\n");
+    debug_print("calibration buffer allocation failed\n");
     return false;
   }
 
@@ -770,25 +751,25 @@ static bool do_detector_get_next(distance_detector_resources_t  *resources,
     if (!acc_detector_distance_prepare(resources->handle, resources->config, resources->sensor, sensor_cal_result, resources->buffer,
                                        resources->buffer_size))
     {
-      printf("acc_detector_distance_prepare() failed\n");
+      debug_print("acc_detector_distance_prepare() failed\n");
       return false;
     }
 
     if (!acc_sensor_measure(resources->sensor))
     {
-      printf("acc_sensor_measure() failed\n");
+      debug_print("acc_sensor_measure() failed\n");
       return false;
     }
 
     if (!acc_hal_integration_wait_for_sensor_interrupt(SENSOR_ID, SENSOR_TIMEOUT_MS))
     {
-      printf("Sensor interrupt timeout\n");
+      debug_print("Sensor interrupt timeout\n");
       return false;
     }
 
     if (!acc_sensor_read(resources->sensor, resources->buffer, resources->buffer_size))
     {
-      printf("acc_sensor_read() failed\n");
+      debug_print("acc_sensor_read() failed\n");
       return false;
     }
 
@@ -796,7 +777,7 @@ static bool do_detector_get_next(distance_detector_resources_t  *resources,
                                        &resources->detector_cal_result_dynamic,
                                        &result_available, result))
     {
-      printf("acc_detector_distance_process() failed\n");
+      debug_print("acc_detector_distance_process() failed\n");
       return false;
     }
   } while (!result_available);
@@ -812,11 +793,10 @@ static void print_distance_result(const acc_detector_distance_result_t *result)
     char buffer[128];  // Buffer for formatting the string
     int offset = 0;   // Track position in buffer
 
-    // Start with command byte 0x2A
-    buffer[offset++] = 0x2A;
+    // Start with command byte RADAR_CMD_NEW_DATA
+    buffer[offset++] = RADAR_CMD_NEW_DATA;
 
-    uint8_t max_dists = 5;
-    uint8_t num_dists = ((result->num_distances) <= max_dists) ? result->num_distances : max_dists;
+    uint8_t num_dists = ((result->num_distances) <= MAX_DISTANCES) ? result->num_distances : MAX_DISTANCES;
 
     // Format each distance/strength pair
     for (uint8_t i = 0; i < num_dists; i++)
@@ -833,7 +813,7 @@ static void print_distance_result(const acc_detector_distance_result_t *result)
   else
   {
     // If no distances detected, just send command bit
-    send_esp32_serial_byte(0x2A);
+    send_esp32_serial_byte(RADAR_CMD_NEW_DATA);
   }
 }
 
@@ -847,8 +827,8 @@ HAL_StatusTypeDef send_esp32_serial(const uint8_t *message, uint16_t msg_length)
     }
 
     // Build message: header + message + null terminator
-    buffer[0] = 0x4F;
-    buffer[1] = 0x3A;
+    buffer[0] = RADAR_HEADER_BYTE1;
+    buffer[1] = RADAR_HEADER_BYTE2;
     memcpy(buffer + 2, message, msg_length);
     buffer[total_length - 1] = 0x00;
 
@@ -860,4 +840,30 @@ HAL_StatusTypeDef send_esp32_serial(const uint8_t *message, uint16_t msg_length)
 
 void send_esp32_serial_byte(uint8_t byte) {
     send_esp32_serial(&byte, 1);
+}
+
+static void debug_print(const char *format, ...) {
+    char msg_buffer[DEBUG_MSG_MAX_LEN];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(msg_buffer, sizeof(msg_buffer), format, args);
+    va_end(args);
+
+    // Calculate total message length including headers and null terminator
+    size_t msg_len = strlen(msg_buffer);
+    uint8_t *send_buffer = malloc(msg_len + 4); // Headers (2) + CMD (1) + Message + Null terminator
+
+    if (send_buffer != NULL) {
+        // Build the header
+        send_buffer[0] = RADAR_HEADER_BYTE1;
+        send_buffer[1] = RADAR_HEADER_BYTE2;
+        send_buffer[2] = RADAR_CMD_DEBUG_MSG;
+
+        // Copy the actual message, including the null terminator
+        strcpy((char *)&send_buffer[3], msg_buffer);
+
+        // Send the complete buffer
+        HAL_UART_Transmit(&DEBUG_UART_HANDLE, send_buffer, msg_len + 4, 100);
+        free(send_buffer);
+    }
 }

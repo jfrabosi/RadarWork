@@ -1,10 +1,11 @@
 // src/communication/GPSManager.cpp
 #include "communication/GPSManager.h"
-#include "communication/GPSManager.h"
+#include "storage/SDCardManager.h"
 #include <Arduino.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdarg.h>
 
 
 /**
@@ -21,11 +22,12 @@ bool GPSManager::initialize(uint8_t rxPin, uint8_t txPin, uint8_t powerPin, RTC_
   m_pBT = &BluetoothManager::getInstance(); // store reference to BT manager
 
   pinMode(m_powerPin, OUTPUT);
-  digitalWrite(m_powerPin, HIGH);  // start with GPS powered on
+  digitalWrite(m_powerPin, LOW);  // start with GPS powered off
 
   m_gpsSerial.begin(GPS_BAUD_RATE, SERIAL_8N1, rxPin, txPin);
-  m_isEnabled = true;
+  m_isEnabled = false;
   m_lastGPSTime = millis();
+  logStatus("GPS initialized\n");
 
   return true;
 }
@@ -72,18 +74,18 @@ void GPSManager::gpsTask() {
     // if position/time located, save, then reset timeout and power off
     if (m_hasFix) {
 
-      // send GPS data over Bluetooth
-      m_pBT->sendMessage("=== New GPS Fix ===");
-      m_pBT->sendMessage("Time: %02d:%02d:%02d UTC",
-                         m_currentData.hour,
-                         m_currentData.minute,
-                         m_currentData.second);
-      m_pBT->sendMessage("Location: %s %s",
-                         m_currentData.latitude,
-                         m_currentData.longitude);
-      m_pBT->sendMessage("Elevation: %s",
-                         m_currentData.elevation);
-      m_pBT->sendMessage("==================");
+      // send GPS data over Bluetooth and save to debug/data log
+      logGPS("=== New GPS Fix ===");
+      logGPS("Time: %02d:%02d:%02d UTC",
+             m_currentData.hour,
+             m_currentData.minute,
+             m_currentData.second);
+      logGPS("Location: %s %s",
+             m_currentData.latitude,
+             m_currentData.longitude);
+      logGPS("Elevation: %s",
+             m_currentData.elevation);
+      logGPS("==================");
 
       // TODO: save GPS position data to config
       m_lastGPSTime = millis();
@@ -142,10 +144,17 @@ void GPSManager::powerOff()
  */
 void GPSManager::syncRTCWithGPS()
 {
-  if (!m_hasFix || !m_pRTC)
+  if (!m_pRTC)
     return;
 
   DateTime now = m_pRTC->now();
+
+  // Add debug prints
+  logStatus("Before RTC sync:");
+  logStatus("RTC time: %02d:%02d:%02d",
+            now.hour(), now.minute(), now.second());
+  logStatus("GPS time: %02d:%02d:%02d UTC",
+            m_currentData.hour, m_currentData.minute, m_currentData.second);
 
   // convert times to seconds for comparison
   int32_t rtc_seconds = ((int32_t)now.hour() * 60 + now.minute()) * 60 + now.second();
@@ -190,6 +199,12 @@ void GPSManager::syncRTCWithGPS()
                             m_currentData.minute,
                             m_currentData.second));
   }
+
+  // After adjustment:
+  now = m_pRTC->now();
+  logStatus("After RTC sync:");
+  logStatus("RTC time: %02d:%02d:%02d",
+            now.hour(), now.minute(), now.second());
 }
 
 
@@ -395,14 +410,46 @@ void GPSManager::convertDDtoDMS(float decimal_degrees, char* result, size_t size
            degrees, whole_minutes, seconds, direction);
 }
 
-
-// TODO: MAKE THIS LOG TO THE DEBUG BUFFER AND PRINT TO SERIAL BT
 /**
- * @brief Logs any input/output messages or debug statements
- * @param message const char* like "Error: GPS exploded :("
+ * @brief Logs any input/output messages or debug statements to the debug log
+ * @param format --- Treat this function like a wrapper for printf! ---
  * @return none
+ *
+ * Adds "GPS:" prefix to all messages
+ * Prints to Serial and queues for SD card if available
  */
-void GPSManager::logStatus(const char *message)
+void GPSManager::logStatus(const char *format, ...)
 {
-  Serial.println(message);
+  // Buffer for formatting the message
+  char messageBuffer[MAX_SENTENCE_LENGTH];
+
+  // Handle variable arguments
+  va_list args;
+  va_start(args, format);
+  vsnprintf(messageBuffer, sizeof(messageBuffer), format, args);
+  va_end(args);
+
+  // Print to Serial
+  Serial.println(messageBuffer);
+
+  // Queue for SD card if available
+  SDCardManager::getInstance().queueDebug("GPS: %s", messageBuffer);
+}
+
+void GPSManager::logGPS(const char *format, ...)
+{
+  // Buffer for formatting the message
+  char messageBuffer[256];
+
+  // Handle variable arguments
+  va_list args;
+  va_start(args, format);
+  vsnprintf(messageBuffer, sizeof(messageBuffer), format, args);
+  va_end(args);
+
+  // Log to debug file with GPS prefix
+  logStatus(messageBuffer);
+
+  // Log to data file without prefix
+  SDCardManager::getInstance().queueData("%s", messageBuffer);
 }
