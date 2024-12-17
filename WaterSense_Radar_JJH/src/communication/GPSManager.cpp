@@ -410,6 +410,7 @@ void GPSManager::convertDDtoDMS(float decimal_degrees, char* result, size_t size
            degrees, whole_minutes, seconds, direction);
 }
 
+
 /**
  * @brief Logs any input/output messages or debug statements to the debug log
  * @param format --- Treat this function like a wrapper for printf! ---
@@ -436,6 +437,15 @@ void GPSManager::logStatus(const char *format, ...)
   SDCardManager::getInstance().queueDebug("GPS: %s", messageBuffer);
 }
 
+
+/**
+ * @brief Logs GPS messages to the debug and data logs
+ * @param format --- Treat this function like a wrapper for printf! ---
+ * @return none
+ *
+ * Adds "GPS:" prefix to debug, and no prefix to data log
+ * Prints to Serial and queues for SD card if available
+ */
 void GPSManager::logGPS(const char *format, ...)
 {
   // Buffer for formatting the message

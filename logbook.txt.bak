@@ -314,4 +314,10 @@ For tomorrow:
 - Fully document RadarManager (and see if any of the new functions in other managers need to be documented)
 - Implement ConfigManager (bridging the BT and radar)
 - Make sure there's nothing missing from the old implementation
-- Start proper (next developer) documentation
+- Start proper (for next developer) documentation
+
+
+12-12-24 ----------------------------------------------------------------------------------------------------------------
+
+Done today:
+- 

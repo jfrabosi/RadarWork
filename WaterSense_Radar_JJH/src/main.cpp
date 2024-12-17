@@ -59,10 +59,10 @@ void setup()
   ConfigSettings currentConfig = SDCardManager::getInstance().getConfig();
 
   // Update the update rate
-  currentConfig.update_rate = 10.0f;
+  currentConfig.update_rate = 20.0f;
   currentConfig.start_m = 1.0f;
-  currentConfig.end_m = 2.50f;
-  currentConfig.max_step_length = 0;
+  currentConfig.end_m = 1.10f;
+  currentConfig.max_step_length = 2;
 
   // Save the modified configuration
   SDCardManager::getInstance().updateConfig(currentConfig);
@@ -156,44 +156,40 @@ void setup()
 
 void loop()
 {
-  // Check if we can sleep
-  bool canSleep = true;
+  // // Check if we can sleep
+  // bool canSleep = true;
 
-  // Don't sleep if BT is active
-  if (BluetoothManager::getInstance().isEnabled())
-  {
-    canSleep = false;
-  }
+  // // Don't sleep if BT is active
+  // if (BluetoothManager::getInstance().isEnabled())
+  // {
+  //   canSleep = false;
+  // }
 
-  // Don't sleep if GPS is active
-  if (GPSManager::getInstance().isEnabled())
-  {
-    canSleep = false;
-  }
+  // // Don't sleep if GPS is active
+  // if (GPSManager::getInstance().isEnabled())
+  // {
+  //   canSleep = false;
+  // }
 
-  // Don't sleep if radar is testing or in middle of measurement
-  if (RadarManager::getInstance().isTesting() ||
-      RadarManager::getInstance().isMeasuring())
-  {
-    canSleep = false;
-  }
+  // // Don't sleep if radar is testing or in middle of measurement
+  // if (RadarManager::getInstance().isTesting() ||
+  //     RadarManager::getInstance().isMeasuring())
+  // {
+  //   canSleep = false;
+  // }
 
-  // Don't sleep if SD card has pending operations
-  if (SDCardManager::getInstance().hasPendingOperations())
-  {
-    canSleep = false;
-  }
+  // // Don't sleep if SD card has pending operations
+  // if (SDCardManager::getInstance().hasPendingOperations())
+  // {
+  //   canSleep = false;
+  // }
 
-  if (canSleep)
-  {
-    // Before sleeping, ensure all SD card buffers are flushed
-    SDCardManager::getInstance().flushDebugBuffer();
-    SDCardManager::getInstance().flushDataBuffer();
-
-    // Enter light sleep
-    int64_t sleep_time = esp_light_sleep_start();
-  }
+  // if (canSleep)
+  // {
+  //   // Enter light sleep
+  //   esp_light_sleep_start();
+  // }
 
   // Regular task processing
-  vTaskDelay(pdMS_TO_TICKS(1));
+  vTaskDelay(pdMS_TO_TICKS(1000));
 }

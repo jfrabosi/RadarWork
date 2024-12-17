@@ -1,6 +1,7 @@
 // src/storage/TimeManager.cpp
 #include "storage/TimeManager.h"
 #include "storage/SDCardManager.h"
+#include "communication/BluetoothManager.h"
 #include <Arduino.h>
 #include <stdarg.h>
 
@@ -329,6 +330,7 @@ bool TimeManager::isLeapYear(uint16_t year) const
   return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
+
 /**
  * @brief Logs any input/output messages or debug statements to the debug log
  * @param format --- Treat this function like a wrapper for printf! ---
@@ -354,4 +356,46 @@ void TimeManager::logStatus(const char *format, ...)
 
   // Queue for SD card if available
   SDCardManager::getInstance().queueDebug("Time: %s", messageBuffer);
+}
+
+
+void TimeManager::performLightSleep()
+{
+  // First check if SD card is busy
+  if (SDCardManager::getInstance().hasActiveOperations())
+  {
+    logStatus("Skipping deep sleep - SD card operations in progress");
+    return;
+  }
+
+  // Calculate processing time
+  uint32_t processingTime = m_processingEndTime - m_processingStartTime;
+
+  // Calculate sleep time (0.99 * period - processing - delay)
+  float sleepTime = (0.99f * m_targetSamplePeriod) - processingTime - 10.0f;
+  // Serial.println(sleepTime);
+
+  if (sleepTime > 0)
+  {
+    uint32_t sleepStart = millis();
+    uint32_t targetWake = sleepStart + (uint32_t)sleepTime;
+
+    // Split into smaller sleep intervals to maintain system stability
+    while (millis() < targetWake)
+    {
+      // Sleep in 10ms chunks
+      uint32_t remainingTime = targetWake - millis();
+      uint32_t sleepChunk = remainingTime < 10UL ? remainingTime : 10UL;
+
+      if (sleepChunk > 0)
+      {
+        esp_sleep_enable_timer_wakeup(sleepChunk * 1000); // convert to microseconds
+        esp_light_sleep_start();
+      }
+
+      // Brief task delay to allow system processing
+      vTaskDelay(1);
+    }
+  }
+  // Serial.printf("wakeup: %lu\n", millis());
 }

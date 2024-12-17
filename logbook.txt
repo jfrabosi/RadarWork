@@ -315,3 +315,16 @@ For tomorrow:
 - Implement ConfigManager (bridging the BT and radar)
 - Make sure there's nothing missing from the old implementation
 - Start proper (for next developer) documentation
+
+
+12-12-24 ----------------------------------------------------------------------------------------------------------------
+
+Done today:
+- Documented the RadarManager
+- Fixed low-power mode so that it actually works!
+
+For tomorrow:
+- Review all managers, look for undocumented code
+- Implement ConfigManager
+- Make sure there's nothing missing from the old implementation
+- Start proper (for next developer) documentation

@@ -6,6 +6,18 @@
 #include <Arduino.h>
 #include <stdarg.h>
 
+
+/**
+ * @brief Initializes the Radar Manager
+ * @param rxPin Pin number for RX pin on ESP32 (connects to STM32 TX)
+ * @param txPin Pin number for TX pin on ESP32 (connects to STM32 RX)
+ * @param baudRate UART baud rate, defaults to 921600
+ * @return true for successful initialization, false if error occurred
+ *
+ * Initializes UART communication with STM32, loads initial configuration from SD card,
+ * and clears any stale data in the serial buffer. Configuration parameters include
+ * measurement range, update rate, signal quality settings, and other radar parameters.
+ */
 bool RadarManager::initialize(uint8_t rxPin, uint8_t txPin, uint32_t baudRate)
 {
   m_rxPin = rxPin;
@@ -43,6 +55,22 @@ bool RadarManager::initialize(uint8_t rxPin, uint8_t txPin, uint32_t baudRate)
   return true;
 }
 
+
+/**
+ * @brief Main task for Radar Manager
+ * @return none
+ *
+ * RadarTask continuously monitors serial data from STM32 and processes incoming
+ * messages. Handles various commands including:
+ * - New distance measurements
+ * - Configuration requests
+ * - Start/stop data collection
+ * - Update rate testing
+ * - Debug messages
+ *
+ * All operations use a custom protocol with header bytes and command codes for
+ * reliable communication between ESP32 and STM32.
+ */
 void RadarManager::radarTask()
 {
   while (true)  // Add infinite loop
@@ -57,6 +85,16 @@ void RadarManager::radarTask()
   }
 }
 
+
+/**
+ * @brief Sends configuration settings to STM32
+ * @param config Configuration settings to send
+ * @return true if config accepted by STM32, false if error/timeout/rejected
+ *
+ * Formats configuration parameters into string and sends to STM32 using custom protocol.
+ * Waits for echo validation and acceptance confirmation from STM32 before returning.
+ * Times out after CONFIG_TIMEOUT_MS milliseconds if no response received.
+ */
 bool RadarManager::sendConfig(const ConfigSettings &config)
 {
   m_currentConfig = config;
@@ -139,6 +177,18 @@ bool RadarManager::sendConfig(const ConfigSettings &config)
   return false;
 }
 
+
+/**
+ * @brief Stops radar data collection safely
+ * @return true if stopped successfully, false if error/timeout
+ *
+ * Performs coordinated stop sequence with STM32:
+ * 1. Disables UART and pulls TX line low for calculated delay
+ * 2. Restores UART and waits for stop acknowledgment
+ * 3. Sends stop confirmation back to STM32
+ *
+ * Delay is calculated based on current update rate to ensure clean stop.
+ */
 bool RadarManager::stopDataCollection()
 {
   // Calculate delay based on update rate
@@ -154,6 +204,16 @@ bool RadarManager::stopDataCollection()
   return true;
 }
 
+
+/**
+ * @brief Sends command byte to STM32
+ * @param cmd Command byte to send
+ * @return true if command sent successfully, false if error
+ *
+ * Formats command with header bytes and null terminator:
+ * [HEADER1][HEADER2][CMD][NULL]
+ * Updates last command timestamp for timeout tracking.
+ */
 bool RadarManager::sendCommand(uint8_t cmd)
 {
   uint8_t buf[4] = {RADAR_HEADER_BYTE1, RADAR_HEADER_BYTE2, cmd, RADAR_NULL};
@@ -166,6 +226,17 @@ bool RadarManager::sendCommand(uint8_t cmd)
   return true;
 }
 
+
+/**
+ * @brief Sends command with additional data payload to STM32
+ * @param cmd Command byte to send
+ * @param data Pointer to data payload
+ * @param len Length of data payload
+ * @return true if command and data sent successfully, false if error
+ *
+ * Formats message as: [HEADER1][HEADER2][CMD][DATA][NULL]
+ * Data payload must be less than MAX_DATA_SIZE bytes.
+ */
 bool RadarManager::sendCommandWithData(uint8_t cmd, const uint8_t *data, size_t len)
 {
   if (len > MAX_DATA_SIZE)
@@ -190,6 +261,22 @@ bool RadarManager::sendCommandWithData(uint8_t cmd, const uint8_t *data, size_t 
   return true;
 }
 
+
+/**
+ * @brief Processes incoming data from STM32
+ * @return true if valid message processed, false if error/invalid
+ *
+ * Handles all incoming messages from STM32 including:
+ * - New distance measurements (RADAR_CMD_NEW_DATA)
+ * - Configuration requests (RADAR_CMD_REQUEST_CONFIG)
+ * - Start/stop commands (RADAR_CMD_START_DATA, RADAR_CMD_STOP_REQUEST)
+ * - Update rate test messages (RADAR_CMD_START_TEST, RADAR_CMD_END_TEST)
+ * - Noise control (RADAR_CMD_NOISE_ON, RADAR_CMD_NOISE_OFF)
+ * - Debug messages (RADAR_CMD_DEBUG_MSG)
+ *
+ * All messages must start with correct header bytes and end with null terminator.
+ * Invalid messages are logged and discarded.
+ */
 bool RadarManager::processRadarData()
 {
   if (m_serial.available() < 3)
@@ -225,6 +312,39 @@ bool RadarManager::processRadarData()
 
   case RADAR_CMD_NEW_DATA:
   {
+    // Handle timing if active
+    if (m_discardCount > 0)
+    {
+      m_discardCount--;
+    }
+
+    if (!m_timingInProgress && m_discardCount <= 0 && m_sampleCount == 0)
+    {
+      // Start timing
+      m_timingInProgress = true;
+      m_timingStartTick = millis();
+      m_sampleCountMax = (uint32_t)(15*m_currentConfig.update_rate) > 15 ? 
+                         (uint32_t)(15*m_currentConfig.update_rate) : 15;
+      m_sampleCount = 0;
+    }
+    else if (m_timingInProgress)
+    {
+      m_sampleCount++;
+
+      // Check if we have enough samples
+      if (m_sampleCount >= m_sampleCountMax)
+      {
+        uint32_t totalTime = millis() - m_timingStartTick;
+        m_samplePeriod = (float)totalTime / m_sampleCount;
+        m_timingInProgress = false;
+        m_samplePeriodOver = true;
+
+        logStatus("Measured sample period: %.2f ms", m_samplePeriod);
+        // Inform TimeManager of the sample period
+        TimeManager::getInstance().setSamplePeriod(m_samplePeriod);
+      }
+    }
+
     uint8_t data[MAX_DATA_SIZE];
     size_t len = 0;
     uint32_t startTime = millis();
@@ -275,6 +395,13 @@ bool RadarManager::processRadarData()
       logStatus("Starting data collection");
       SDCardManager::getInstance().requestNewDataFile();
       m_isActive = true;
+
+      // Start timing sequence
+      m_discardCount = (uint32_t) (5*m_currentConfig.update_rate) > 5 ?
+                       (uint32_t) (5*m_currentConfig.update_rate) : 5; // Discard 5*samplerate samples
+      m_sampleCount = 0;
+      m_timingInProgress = false; // Will start after discarding
+      m_samplePeriodOver = false;
       return true;
     }
     break;
@@ -364,6 +491,12 @@ bool RadarManager::processRadarData()
     if (nullByte == RADAR_NULL)
     {
       m_noiseBlocking = true;
+      // Serial.printf("noise_on: %lu\n", millis());
+      // Processing is done, stop timer
+      if (isSamplingPeriodOver() && !BluetoothManager::getInstance().isEnabled())
+      {
+        TimeManager::getInstance().stopProcessingTimer();
+      }
       return true;
     }
     break;
@@ -379,7 +512,13 @@ bool RadarManager::processRadarData()
     {
       m_noiseBlocking = false;
       m_measurementInProgress = true;
-      return true;
+      // Serial.printf("noise_off: %lu\n", millis());
+      // Start timing the processing
+      if (isSamplingPeriodOver() && !BluetoothManager::getInstance().isEnabled())
+      {
+        TimeManager::getInstance().startProcessingTimer();
+        return true;
+      }
     }
     break;
 
@@ -427,6 +566,25 @@ bool RadarManager::processRadarData()
   return false;
 }
 
+
+/**
+ * @brief Processes and logs distance measurement data
+ * @param data Pointer to raw distance data
+ * @param len Length of data
+ * @return none
+ *
+ * Formats distance data with timestamp and handles:
+ * - Empty measurements ("no_dists")
+ * - Valid distance measurements
+ *
+ * Data is logged to:
+ * - SD card (always)
+ * - Serial monitor (rate limited)
+ * - Bluetooth (rate limited)
+ *
+ * Rate limiting prevents overwhelming serial/BT connections while ensuring
+ * all data is saved to SD card.
+ */
 void RadarManager::handleDistanceData(const uint8_t *data, size_t len)
 {
   // Get timestamp
@@ -474,10 +632,20 @@ void RadarManager::handleDistanceData(const uint8_t *data, size_t len)
     BluetoothManager::getInstance().sendWithWrapping("", fullStr, false);
     m_lastPrintTime = currentTime;
   }
-  
+
   m_measurementInProgress = false;
 }
 
+
+/**
+ * @brief Logs status messages to debug log
+ * @param format Printf-style format string
+ * @param ... Variable arguments for format string
+ * @return none
+ *
+ * Adds "Radar:" prefix to all messages.
+ * Messages are printed to Serial and queued for SD card logging.
+ */
 void RadarManager::logStatus(const char *format, ...)
 {
   char messageBuffer[256];
@@ -493,6 +661,23 @@ void RadarManager::logStatus(const char *format, ...)
   SDCardManager::getInstance().queueDebug("Radar: %s", messageBuffer);
 }
 
+
+/**
+ * @brief Executes radar stop sequence
+ * @param delay_ms Delay time in milliseconds between steps
+ * @param timeout_ms Maximum time to wait for acknowledgment
+ * @return true if stop sequence completed successfully, false if timeout/error
+ *
+ * Performs coordinated shutdown:
+ * 1. Disable UART
+ * 2. Set TX pin low for specified delay
+ * 3. Restore UART
+ * 4. Wait for stop acknowledgment
+ * 5. Send confirmation
+ *
+ * Delay is calculated based on update rate to ensure clean stop.
+ * Times out if no acknowledgment received within timeout period.
+ */
 bool RadarManager::performStopSequence(uint32_t delay_ms, uint32_t timeout_ms)
 {
   // Log to both status and Bluetooth
@@ -541,6 +726,16 @@ bool RadarManager::performStopSequence(uint32_t delay_ms, uint32_t timeout_ms)
   return false;
 }
 
+
+/**
+ * @brief Calculates actual update rate from test results
+ * @param count Number of samples collected
+ * @param elapsed_ms Time elapsed in milliseconds
+ * @return Calculated update rate in Hz, 0.0 if invalid input
+ *
+ * Validates sample count (0-251) and calculates rate:
+ * rate = (count * 1000) / elapsed_ms
+ */
 float RadarManager::calculateUpdateRate(uint8_t count, uint32_t elapsed_ms)
 {
   if (count >= 0 && count <= 251)
@@ -551,6 +746,20 @@ float RadarManager::calculateUpdateRate(uint8_t count, uint32_t elapsed_ms)
   return 0.0f;
 }
 
+
+/**
+ * @brief Validates configuration echo from STM32
+ * @param received Pointer to received data
+ * @param len Length of received data
+ * @return true if echo matches sent config, false if mismatch
+ *
+ * Verifies:
+ * 1. Correct doubled header sequence
+ * 2. Minimum message length
+ * 3. Config string matches exactly
+ *
+ * Echo format: [HEADER1][HEADER2][HEADER1][HEADER2][CMD][CONFIG_STRING][NULL]
+ */
 bool RadarManager::validateConfigEcho(const uint8_t *received, size_t len)
 {
   // Check minimum length for doubled header

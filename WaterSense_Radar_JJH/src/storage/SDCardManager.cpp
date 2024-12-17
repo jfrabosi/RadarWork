@@ -165,6 +165,7 @@ void SDCardManager::sdTask()
  */
 void SDCardManager::queueData(const char *format, ...)
 {
+  OperationGuard guard(m_operationInProgress);
   char buffer[MAX_LINE_LENGTH];
   va_list args;
   va_start(args, format);
@@ -182,6 +183,7 @@ void SDCardManager::queueData(const char *format, ...)
   }
 }
 
+
 /**
  * @brief Queues debug message for writing to SD card
  * @param format Treat this function like a wrapper for printf
@@ -192,6 +194,7 @@ void SDCardManager::queueData(const char *format, ...)
  */
 void SDCardManager::queueDebug(const char *format, ...)
 {
+  OperationGuard guard(m_operationInProgress);
   char buffer[MAX_LINE_LENGTH];
   va_list args;
   va_start(args, format);
@@ -220,6 +223,7 @@ void SDCardManager::queueDebug(const char *format, ...)
  */
 void SDCardManager::updateConfig(const ConfigSettings &config)
 {
+  OperationGuard guard(m_operationInProgress);
   std::lock_guard<std::mutex> lock(m_configMutex);
   m_currentConfig = config;
   m_needConfigSave = true;
@@ -234,30 +238,10 @@ void SDCardManager::updateConfig(const ConfigSettings &config)
  */
 ConfigSettings SDCardManager::getConfig()
 {
+  OperationGuard guard(m_operationInProgress);
   std::lock_guard<std::mutex> lock(m_configMutex);
   return m_currentConfig;
 }
-
-
-bool SDCardManager::hasPendingOperations()
-{
-  bool hasOperations = false;
-
-  {
-    std::lock_guard<std::mutex> dataLock(m_dataQueueMutex);
-    std::lock_guard<std::mutex> debugLock(m_debugQueueMutex);
-
-    hasOperations = !m_dataQueue.empty() ||
-                    !m_debugQueue.empty() ||
-                    m_dataBufferPos > 0 ||
-                    m_debugBufferPos > 0 ||
-                    m_needNewDataFile ||
-                    m_needConfigSave;
-  }
-
-  return hasOperations;
-}
-
 
 /**
  * @brief Creates a new directory on the SD card
@@ -266,6 +250,7 @@ bool SDCardManager::hasPendingOperations()
  */
 bool SDCardManager::createDirectory(const char *path)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized)
     return false;
 
@@ -287,6 +272,7 @@ bool SDCardManager::createDirectory(const char *path)
  */
 bool SDCardManager::appendToFile(const char *path, const char *message)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized)
     return false;
 
@@ -314,9 +300,9 @@ bool SDCardManager::appendToFile(const char *path, const char *message)
  * @param path File path to delete
  * @return true if file deleted successfully, false if error
  */
-
 bool SDCardManager::deleteFile(const char *path)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized)
     return false;
 
@@ -340,6 +326,7 @@ bool SDCardManager::deleteFile(const char *path)
  */
 bool SDCardManager::startNewDebugFile(char **debugFilePath)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized || !m_pRTC)
     return false;
 
@@ -395,6 +382,7 @@ bool SDCardManager::startNewDebugFile(char **debugFilePath)
  */
 void SDCardManager::appendDebug(const char *format, ...)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized)
     return;
 
@@ -434,6 +422,7 @@ void SDCardManager::appendDebug(const char *format, ...)
  */
 void SDCardManager::flushDebugBuffer()
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized || m_debugBufferPos == 0)
     return;
 
@@ -460,6 +449,7 @@ void SDCardManager::flushDebugBuffer()
  */
 bool SDCardManager::startNewDataFile(char **dataFilePath)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized || !m_pRTC)
     return false;
 
@@ -546,6 +536,8 @@ bool SDCardManager::startNewDataFile(char **dataFilePath)
   }
   m_currentDataPath = strdup(filename);
 
+  logStatus("New data file created: %s", filename);
+
   m_linesSaved = 0;
   return true;
 }
@@ -561,6 +553,7 @@ bool SDCardManager::startNewDataFile(char **dataFilePath)
  */
 void SDCardManager::appendData(const char *format, ...)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized)
     return;
 
@@ -601,6 +594,7 @@ void SDCardManager::appendData(const char *format, ...)
  */
 void SDCardManager::flushDataBuffer()
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized || m_dataBufferPos == 0)
     return;
 
@@ -613,9 +607,10 @@ void SDCardManager::flushDataBuffer()
   appendToFile(m_currentDataPath, m_dataBuffer);
 
   // Clear buffer
+  m_linesSaved += m_dataBufferPos;
   m_dataBuffer[0] = '\0';
   m_dataBufferPos = 0;
-  m_linesSaved += m_maxDataBufferLines;
+  m_lastFlushTime = millis();
 
   // Check if we need to start a new file
   if (m_linesSaved >= MAX_LINES_PER_FILE)
@@ -635,6 +630,7 @@ void SDCardManager::flushDataBuffer()
  */
 bool SDCardManager::readConfig(ConfigSettings *config)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized || !config)
     return false;
 
@@ -704,6 +700,7 @@ bool SDCardManager::readConfig(ConfigSettings *config)
  */
 bool SDCardManager::saveConfig(const ConfigSettings *config)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!m_isInitialized || !config)
     return false;
 
@@ -746,6 +743,7 @@ bool SDCardManager::saveConfig(const ConfigSettings *config)
  */
 bool SDCardManager::verifyConfig(const ConfigSettings *config)
 {
+  OperationGuard guard(m_operationInProgress);
   if (!config)
     return false;
 
@@ -776,6 +774,7 @@ bool SDCardManager::verifyConfig(const ConfigSettings *config)
   return true;
 }
 
+
 /**
  * @brief Logs any input/output messages or debug statements to the debug log
  * @param format --- Treat this function like a wrapper for printf! ---
@@ -786,6 +785,7 @@ bool SDCardManager::verifyConfig(const ConfigSettings *config)
  */
 void SDCardManager::logStatus(const char *format, ...)
 {
+  OperationGuard guard(m_operationInProgress);
   // Buffer for formatting the message
   char messageBuffer[MAX_LINE_LENGTH];
 

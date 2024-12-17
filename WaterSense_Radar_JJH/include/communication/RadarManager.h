@@ -43,11 +43,24 @@ public:
   bool isActive() const { return m_isActive; }
   bool isTesting() const { return m_isTesting; }
   bool isMeasuring() const { return m_measurementInProgress; }
+  float getSamplePeriod() const { return m_samplePeriod; }
+  bool isSamplingPeriodOver() const { return m_samplePeriodOver; }
 
 private:
-  RadarManager() : m_isActive(false), m_isTesting(false), m_noiseBlocking(false),
-                   m_testStartTime(0), m_rxPin(0), m_txPin(0), 
-                   m_measurementInProgress(false) {}
+  RadarManager() : m_isActive(false),
+                   m_isTesting(false),
+                   m_noiseBlocking(false),
+                   m_testStartTime(0),
+                   m_rxPin(0),
+                   m_txPin(0),
+                   m_measurementInProgress(false),
+                   m_samplePeriod(0.0f),
+                   m_timingInProgress(false),
+                   m_timingStartTick(0),
+                   m_sampleCount(0),
+                   m_discardCount(0),
+                   m_sampleCountMax(1),
+                   m_samplePeriodOver(false) {}
   ~RadarManager() = default;
 
   RadarManager(const RadarManager &) = delete;
@@ -73,11 +86,18 @@ private:
   uint8_t m_txPin;  // Added TX pin storage
   uint32_t m_lastPrintTime = 0;
   bool m_measurementInProgress;
+  float m_samplePeriod;       // Time for one sample in milliseconds
+  bool m_timingInProgress;    // Are we currently timing samples?
+  uint32_t m_timingStartTick; // When did timing start?
+  uint32_t m_sampleCount;     // How many samples received during timing
+  uint32_t m_discardCount;    // How many samples to discard
+  uint32_t m_sampleCountMax;  // Sample count goal
+  bool m_samplePeriodOver;
 
-  static constexpr size_t MAX_DATA_SIZE = 256;
+      static constexpr size_t MAX_DATA_SIZE = 256;
   static constexpr uint32_t CONFIG_TIMEOUT_MS = 2500;
   static constexpr uint32_t DEFAULT_TIMEOUT_MS = 1000;
   static constexpr uint32_t STOP_TIMEOUT_MS = 3000;
-  static constexpr uint8_t MAX_BT_PRINTS_PER_SEC = 10;  // Adjust this value as needed
+  static constexpr uint8_t MAX_BT_PRINTS_PER_SEC = 11;  // Adjust this value as needed
   static constexpr uint32_t MIN_PRINT_INTERVAL_MS = 1000 / MAX_BT_PRINTS_PER_SEC;
 };

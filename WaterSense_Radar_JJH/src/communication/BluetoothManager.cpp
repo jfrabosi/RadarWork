@@ -334,6 +334,7 @@ void BluetoothManager::sendWithWrapping(const char* prefix, const char* text, bo
   }
 }
 
+
 /**
  * @brief Logs any input/output messages or debug statements to the debug log
  * @param format --- Treat this function like a wrapper for printf! ---

@@ -6,6 +6,7 @@
 #include <string>
 #include <queue>
 #include <mutex>
+#include <atomic>
 
 typedef struct
 {
@@ -44,11 +45,28 @@ public:
   ConfigSettings getConfig();
   void requestNewDataFile() { m_needNewDataFile = true; }
 
-  bool hasPendingOperations();
   void flushDebugBuffer();
   void flushDataBuffer();
 
+  bool hasActiveOperations() const { return m_operationInProgress.load(); }
+
 private:
+  class OperationGuard
+  {
+  public:
+    OperationGuard(std::atomic<bool> &flag) : m_flag(flag)
+    {
+      m_flag.store(true);
+    }
+    ~OperationGuard()
+    {
+      m_flag.store(false);
+    }
+
+  private:
+    std::atomic<bool> &m_flag;
+  };
+
   explicit SDCardManager(size_t dataBufferLines)
       : m_isInitialized(false),
         m_pRTC(nullptr),
@@ -150,6 +168,8 @@ private:
   // Config storage
   ConfigSettings m_currentConfig;
   std::mutex m_configMutex;
+
+  std::atomic<bool> m_operationInProgress{false}; // Track if any operation is running
 
   static constexpr size_t MAX_QUEUE_SIZE = 100; // Adjust based on needs
 };
